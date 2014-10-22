@@ -30,7 +30,7 @@
 		}
 
 		// this function will be used by user to get any data from page, for multiple data array will be returned,object for single data, 0 for search failed
-		public function find($pageName, $data, $query="") {
+		public function find($pageName, $data="", $query="") {
 			return $this->getDataFromDatabase($pageName, $data, $query);
 		}
 		/**
@@ -39,14 +39,26 @@
 
 		private function getDataFromDatabase($pageName, $data, $query) {
 			$fileContent = $this->fetchTotalContentOfFileAsJson();
-			$jsonDataFromFile = json_decode($fileContent);
-			$fileContent = null;
+			$jsonDataFromFile = json_decode($fileContent, true);
+			$fileContent = NULL;
+			$pageData = $jsonDataFromFile[$pageName];
+			$jsonDataFromFile = NULL;
+			$pageDataJson = json_encode($pageData);
+			$pageData = NULL;
+			$this->searchForData($pageDataJson, $data);
+		}
+
+		private function searchForData($pageDataJson, $data) {
+			$data = null;
+			for($index=0; $index<strlen($pageDataJson); $index+=) {
+
+			}
 		}
 
 		private function writeDataToFile($pageName, $jsonData) {
 			$fileContent = $this->fetchTotalContentOfFileAsJson();
 			$jsonDataFromFile = json_decode($fileContent);
-			$fileContent = null;
+			$fileContent = NULL;
 			$inputJsonData = json_decode($jsonData);
 			if(!isset($jsonDataFromFile->$pageName)) {//if the record is not present creating an empty array for the record
 				$jsonDataFromFile->$pageName = array();
@@ -116,4 +128,14 @@
 		}
 
 	}
+?>
+
+<?php
+  $instance = new LifeDB("jsondb_1.json");
+  // $instance->insert("student","{\"name\":\"arindam\",\"title\":\"karmokar\"}");
+  // $instance->insert("student","{\"name\":\"piklu\"}");
+  // $instance->insert("teacher","{\"name\":\"shyamal\"}");
+  // $instance->insert("teacher","{\"name\":\"aritrik\"}");
+  // $instance->insert("student","[{\"name\":\"arindam1\"},{\"name\":\"piklu1\"}]");
+  $instance->find("student","{\"name\":\"arindam\"}")
 ?>
