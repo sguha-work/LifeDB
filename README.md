@@ -27,3 +27,5 @@ basic test cases are here
   
   $instance->find("student", "[\"name\",\"title\",\"class\"]", "");
   
+  $instance->find("student", "*", "");
+  
