@@ -12,9 +12,18 @@ I'm using a page based locking system for executing the database transaction lik
 
 
 basic test cases are here
+
   $instance = new LifeDB("jsondb_1.json");
+  
   $instance->insert("student","{\"name\":\"arindam\",\"title\":\"karmokar\"}");
+  
   $instance->insert("student","{\"name\":\"piklu\"}");
+  
   $instance->insert("teacher","{\"name\":\"shyamal\"}");
+  
   $instance->insert("teacher","{\"name\":\"aritrik\"}");
+  
   $instance->insert("student","[{\"name\":\"arindam1\"},{\"name\":\"piklu1\"}]");
+  
+  $instance->find("student", "[\"name\",\"title\",\"class\"]", "");
+  
