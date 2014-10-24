@@ -41,11 +41,11 @@
 
 		// this function will be called by the user to dalete data
 		public function deletePage($pageName) {
-			$this->deleteSpecifiedPageFromDatabase($pageName, $isHardDelete=false);
+			return $this->deleteSpecifiedPageFromDatabase($pageName, $isHardDelete=false);
 		}
 
-		public function deleteRecord($pageName, $query) {
-
+		public function deleteRecord($pageName, $query="") {
+			return $this->deleteSpecifiedRecordFromDatabase($pageName, $query);
 		}
 		
 		// requirred to destroy the database
@@ -56,6 +56,27 @@
 		/**
 		* private functions
 		*/
+
+		// this function deletes specied records based on the query
+		private function deleteSpecifiedRecordFromDatabase($pageName, $query) {
+			if(trim($query) == "") { // if query not specified total page will be removed
+				$this->deleteSpecifiedPageFromDatabase($pageName, false);
+			} else {
+				$fileContent = json_decode($this->fetchTotalContentOfFileAsJson());
+				$pageContent = $fileContent[$pageName];
+				$fileContent = NULL;
+				$queryObject = json_decode($query);
+				$newContent = array();
+				foreach($pageContent as $record) {
+					if(!$this->match($record, $queryObject)) {// if the record didn't match with query keeping the record
+						array_push($newContent, $record);
+					}
+				}
+				$fileContent = json_decode($this->fetchTotalContentOfFileAsJson());
+				$fileContent[$pageName] = $newContent;
+				return file_put_contents ($this->dbFileName, json_encode($fileContent)); 
+			}
+		}
 
 		private function deleteSpecifiedPageFromDatabase($pageName, $isHardDelete) {
 			$databaseContent = json_decode($this->fetchTotalContentOfFileAsJson());
@@ -70,9 +91,10 @@
 					}
 					$newContent = substr_replace($newContent, "", -1);
 					$newContent .= "}";
-					file_put_contents ($this->dbFileName, $newContent); 
+					return file_put_contents ($this->dbFileName, $newContent); 
 				} else {
 					$databaseContent[$pageName] = null;
+					return true;
 				}
 			}
 			
