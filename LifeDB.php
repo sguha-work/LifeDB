@@ -33,6 +33,16 @@
 		public function find($pageName, $attribute="*", $query="") {
 			return $this->getDataFromDatabase($pageName, $attribute, $query);
 		}
+
+		// this function will be called by the user to update data
+		public function update($pageName, $attributeName, $query) {
+
+		}
+
+		// this function will be called by the user to dalete data
+		public function delete($pageName, $attributeName, $query) {
+
+		}		
 		
 		/**
 		* private functions
@@ -49,22 +59,47 @@
 			$pageData = NULL;
 			
 			if(trim($query) == "") {
-				if(trim($attribute) == "*") {
+				if(trim($attribute) == "*") { // if * is given in place of attribute name all dta will be returned
 					return $pageDataJson;
 				} else {
 					$attributeObject = json_decode($attribute);
 					if(!$attributeObject) { // if provided attribute is not a valid json dta returning false
 						return false;
 					} else {
-						if(is_array($attributeObject)) {
-							$pageData = json_decode($pageDataJson, true);
-							$pageDataJson = NULL;
-							$outputJson = $this->createJSONDataFromSpecifiedAttribute($pageData, $attributeObject);
-							$pageData = null;
-							return $outputJson;
-						}
+						$attribute = NULL;
+						$pageData = json_decode($pageDataJson, true);
+						$pageDataJson = NULL;
+						$outputJson = $this->createJSONDataFromSpecifiedAttribute($pageData, $attributeObject);
+						$pageData = null;
+						return $outputJson;
+						
 					}
 				}
+			} else {
+				$queryObject = json_decode($query, true);
+				if(!$queryObject) { // if query is not a valid json returning false
+					return false;
+				} else {
+					$query = NULL;
+					$pageData = json_decode($pageDataJson, true);
+					$pageDataJson = NULL;
+					$attributeObject = "*";
+					if(trim($attribute) != "*") {
+						$attributeObject = json_decode($attribute);
+						if(!$attributeObject) { // returning false if attribute is not valid json
+							return false;
+						}
+					}
+					$outputJson = $this->createJSONDataFromSpecifiedQueryAndAttribute($pageData,$queryObject, $attributeObject);
+					return $outputJson;
+				}
+			}
+		}
+
+		private function createJSONDataFromSpecifiedQueryAndAttribute($pageData,$queryObject, $attributeObject) {
+			$outputJson = "[";
+			foreach($pageData as $record) {
+
 			}
 		}
 
@@ -86,8 +121,7 @@
 			}
 			$outputJson = substr_replace($outputJson, "", -1);
 			$outputJson .= "]";
-			echo $outputJson;
-			return $outputJson;
+			return $outputJson; // returning json encoded string as output
 		}
 
 		private function writeDataToFile($pageName, $jsonData) {
@@ -98,18 +132,31 @@
 			if(!isset($jsonDataFromFile->$pageName)) {//if the record is not present creating an empty array for the record
 				$jsonDataFromFile->$pageName = array();
 				if(is_array($inputJsonData)) {
-					foreach($inputJsonData as $data) {
+					$index = 0;
+					foreach($inputJsonData as $data) { 
+						$data->_id = $index;
+						$data->_createdAt = time();
 						array_push($jsonDataFromFile->$pageName, $data);	
+						$index += 1;
 					}
 				} else {
+					$inputJsonData->_createdAt = time();
+					$inputJsonData->_id = 0;
 					array_push($jsonDataFromFile->$pageName, $inputJsonData);
 				}
 			} else {
 				if(is_array($inputJsonData)) {
+					$index = count($jsonDataFromFile->$pageName);
 					foreach($inputJsonData as $data) {
+						$data->_id = $index;
+						$data->_createdAt = time();
 						array_push($jsonDataFromFile->$pageName, $data);	
+						$index += 1;
 					}
 				} else {
+					$index = count($jsonDataFromFile->$pageName);
+					$inputJsonData->_id = $index;
+					$inputJsonData->_createdAt = time();
 					array_push($jsonDataFromFile->$pageName, $inputJsonData);
 				}
 			}
@@ -163,14 +210,4 @@
 		}
 
 	}
-?>
-
-<?php
-  $instance = new LifeDB("jsondb_1.json");
-  // $instance->insert("student","{\"name\":\"arindam\",\"title\":\"karmokar\"}");
-  // $instance->insert("student","{\"name\":\"piklu\"}");
-  // $instance->insert("teacher","{\"name\":\"shyamal\"}");
-  // $instance->insert("teacher","{\"name\":\"aritrik\"}");
-  // $instance->insert("student","[{\"name\":\"arindam1\"},{\"name\":\"piklu1\"}]");
-  $instance->find("student", "[\"name\",\"title\",\"class\"]", "");
 ?>
