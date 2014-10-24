@@ -40,13 +40,52 @@
 		}
 
 		// this function will be called by the user to dalete data
-		public function delete($pageName, $attributeName, $query) {
+		public function deletePage($pageName) {
+			$this->deleteSpecifiedPageFromDatabase($pageName, $isHardDelete=false);
+		}
 
+		public function deleteRecord($pageName, $query) {
+
+		}
+		
+		// requirred to destroy the database
+		public function destroyDb($willDeleteFileAlso=false) {
+			return $this->destroyDatabase($willDeleteFileAlso);
 		}		
 		
 		/**
 		* private functions
 		*/
+
+		private function deleteSpecifiedPageFromDatabase($pageName, $isHardDelete) {
+			$databaseContent = json_decode($this->fetchTotalContentOfFileAsJson());
+			if(!isset($databaseContent[$pageName])) {
+				return false;
+			} else {
+				if($isHardDelete) {
+					$newContent="{";
+					foreach($databaseContent as $page) {
+						$newContent .= json_encode($page);
+						$newContent .= ",";
+					}
+					$newContent = substr_replace($newContent, "", -1);
+					$newContent .= "}";
+					file_put_contents ($this->dbFileName, $newContent); 
+				} else {
+					$databaseContent[$pageName] = null;
+				}
+			}
+			
+		}
+
+		//this function destroys a database. Destroyed database cannot be restored
+		private function destroyDatabase($willDeleteFileAlso) {
+			unlink($this->dbFileName); 
+			if(!$willDeleteFileAlso) {// if file should be kept then reinitiating an empty file
+				$this->initiateEmptyFile();
+			}
+			return true;
+		}
 
 		private function getDataFromDatabase($pageName, $attribute, $query) {
 			$fileContent = $this->fetchTotalContentOfFileAsJson();
@@ -231,6 +270,7 @@
 			return 1;
 		}
 
+		// returns the content of the total db file
 		private function fetchTotalContentOfFileAsJson() {
 			return file_get_contents($this->dbFileName);
 		}
