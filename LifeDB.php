@@ -30,29 +30,64 @@
 		}
 
 		// this function will be used by user to get any data from page, for multiple data array will be returned,object for single data, 0 for search failed
-		public function find($pageName, $data="", $query="") {
-			return $this->getDataFromDatabase($pageName, $data, $query);
+		public function find($pageName, $attribute="*", $query="") {
+			return $this->getDataFromDatabase($pageName, $attribute, $query);
 		}
+		
 		/**
 		* private functions
 		*/
 
-		private function getDataFromDatabase($pageName, $data, $query) {
+		private function getDataFromDatabase($pageName, $attribute, $query) {
 			$fileContent = $this->fetchTotalContentOfFileAsJson();
-			$jsonDataFromFile = json_decode($fileContent, true);
+			$jsonDataFromFile = json_decode($fileContent, true);//* file's json data total
 			$fileContent = NULL;
+
 			$pageData = $jsonDataFromFile[$pageName];
 			$jsonDataFromFile = NULL;
-			$pageDataJson = json_encode($pageData);
+			$pageDataJson = json_encode($pageData);// specified page's data(json encoded)
 			$pageData = NULL;
-			$this->searchForData($pageDataJson, $data);
+			
+			if(trim($query) == "") {
+				if(trim($attribute) == "*") {
+					return $pageDataJson;
+				} else {
+					$attributeObject = json_decode($attribute);
+					if(!$attributeObject) { // if provided attribute is not a valid json dta returning false
+						return false;
+					} else {
+						if(is_array($attributeObject)) {
+							$pageData = json_decode($pageDataJson, true);
+							$pageDataJson = NULL;
+							$outputJson = $this->createJSONDataFromSpecifiedAttribute($pageData, $attributeObject);
+							$pageData = null;
+							return $outputJson;
+						}
+					}
+				}
+			}
 		}
 
-		private function searchForData($pageDataJson, $data) {
-			$data = null;
-			for($index=0; $index<strlen($pageDataJson); $index+=) {
-
+		private function createJSONDataFromSpecifiedAttribute($pageData, $attributeObject) {
+			$outputJson = "[";
+			foreach($pageData as $record) {
+				$singleObject = "{";
+				foreach($attributeObject as $attribute) {
+					if(!isset($record[$attribute]) || $record[$attribute] == NULL) {
+						$singleObject .= '"'.$attribute.'":null';
+					} else {
+						$singleObject .= '"'.$attribute.'":"'.$record[$attribute].'"';
+					}
+					$singleObject .= ",";
+				}
+				$singleObject = substr_replace($singleObject, "", -1);
+				$singleObject .= "},";
+				$outputJson .= $singleObject;
 			}
+			$outputJson = substr_replace($outputJson, "", -1);
+			$outputJson .= "]";
+			echo $outputJson;
+			return $outputJson;
 		}
 
 		private function writeDataToFile($pageName, $jsonData) {
@@ -137,5 +172,5 @@
   // $instance->insert("teacher","{\"name\":\"shyamal\"}");
   // $instance->insert("teacher","{\"name\":\"aritrik\"}");
   // $instance->insert("student","[{\"name\":\"arindam1\"},{\"name\":\"piklu1\"}]");
-  $instance->find("student","{\"name\":\"arindam\"}")
+  $instance->find("student", "[\"name\",\"title\",\"class\"]", "");
 ?>
