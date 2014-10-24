@@ -35,7 +35,7 @@
 		}
 
 		// this function will be called by the user to update data
-		public function update($pageName, $attributeName, $query) {
+		public function update($pageName, $attributeName, $query, $options) {
 
 		}
 
@@ -99,8 +99,75 @@
 		private function createJSONDataFromSpecifiedQueryAndAttribute($pageData,$queryObject, $attributeObject) {
 			$outputJson = "[";
 			foreach($pageData as $record) {
-
+				if($this->match($record, $queryObject)) {//if the query matches going for the attribute
+					if($attributeObject == "*") {
+						$outputJson.=json_encode($record).",";
+					} else {
+						$singleObject = "{";
+						foreach($attributeObject as $attribute) {
+							if(!isset($record[$attribute]) || $record[$attribute] == NULL) {
+								$singleObject .= '"'.$attribute.'":null';
+							} else {
+								$singleObject .= '"'.$attribute.'":"'.$record[$attribute].'"';
+							}
+							$singleObject .= ",";
+						}
+						$singleObject = substr_replace($singleObject, "", -1);
+						$singleObject.="}";
+						$outputJson.=$singleObject.",";			
+					}
+				} else {
+					continue;
+				}
 			}
+			if($outputJson!="[") {
+				$outputJson = substr_replace($outputJson, "", -1);
+			}
+			$outputJson.="]";
+			echo $outputJson;
+			return $outputJson;
+		}
+
+		// if the record matches the query the function returns true else false
+		private function match($record, $queryObject) {
+			$flag = 0;
+			foreach($queryObject as $query) {
+				$operand = $this->getOperandFromQuery($query);
+				$queryArray = explode($operand, $query);
+				$attributeName = trim($queryArray[0]);
+				$value         = trim($queryArray[1]);
+				if(!isset($record[$attributeName])||$record[$attributeName]==NULL) {
+					return false;
+				} else {
+					$receievedValueOfRecord = $record[$attributeName];
+					return $this->makeOperation($receievedValueOfRecord, $value, $operand);
+				}
+			}
+			
+		}
+
+		// this function take the values from given and from record and perform the operation based on the operand
+		private function makeOperation($receievedValueOfRecord, $value, $operand) {
+			if($operand === "@eq" ) {
+				if($receievedValueOfRecord === $value) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		}
+
+		//this function find out which operator exists in the query
+		private function getOperandFromQuery($query) {
+			$operators = array('@eq', '@gt', '@lt', '@ge', '@le');
+			$selectedOpearator = "";
+			$query = strtolower($query);
+			foreach($operators as $opeartor) {
+				if(strpos($query, $opeartor) !== false) {
+					return $opeartor;
+				}
+			}
+			return false;
 		}
 
 		private function createJSONDataFromSpecifiedAttribute($pageData, $attributeObject) {
@@ -210,4 +277,17 @@
 		}
 
 	}
+?>
+
+<?php
+  	$instance = new LifeDB("jsondb_1.json");
+  	// $instance->insert("student","{\"name\":\"arindam\",\"title\":\"karmokar\"}");
+  	// $instance->insert("student","{\"name\":\"piklu\"}");
+  	// $instance->insert("teacher","{\"name\":\"shyamal\"}");
+  	// $instance->insert("teacher","{\"name\":\"aritrik\"}");
+  	// $instance->insert("student","[{\"name\":\"arindam1\"},{\"name\":\"piklu1\"}]");
+  	//$instance->find("student", "*", "");
+ 	//$instance->find("student", "[\"name\",\"title\",\"class\"]", "");
+ 	$instance->find("student", "[\"name\",\"class\"]", "[\"name @eq xarindam\"]");	
+ 	//$instance->find("student", "*", "[\"name @eq arindam\"]");	
 ?>
