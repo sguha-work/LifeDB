@@ -159,40 +159,41 @@
 
 		private function createJSONDataFromSpecifiedQueryAndAttribute($pageData,$queryObject, $attributeObject) {
 			$outputJson = "[";
-			foreach($pageData as $record) {
-				if($this->match($record, $queryObject)) {//if the query matches going for the attribute
-					if($attributeObject == "*") {
-						$outputJson.=json_encode($record).",";
-					} else {
-						$singleObject = "{";
-						foreach($attributeObject as $attribute) {
-							if(!isset($record[$attribute]) || $record[$attribute] == NULL) {
-								$singleObject .= '"'.$attribute.'":null';
-							} else {
-								$singleObject .= '"'.$attribute.'":"'.$record[$attribute].'"';
+			foreach($queryObject as $query) {
+				foreach($pageData as $record) {
+					if($this->match($record, $query)) {//if the query matches going for the attribute
+						if($attributeObject == "*") {
+							$outputJson.=json_encode($record).",";
+						} else {
+							$singleObject = "{";
+							foreach($attributeObject as $attribute) {
+								if(!isset($record[$attribute]) || $record[$attribute] == NULL) {
+									$singleObject .= '"'.$attribute.'":null';
+								} else {
+									$singleObject .= '"'.$attribute.'":"'.$record[$attribute].'"';
+								}
+								$singleObject .= ",";
 							}
-							$singleObject .= ",";
+							$singleObject = substr_replace($singleObject, "", -1);
+							$singleObject.="}";
+							$outputJson.=$singleObject.",";			
 						}
-						$singleObject = substr_replace($singleObject, "", -1);
-						$singleObject.="}";
-						$outputJson.=$singleObject.",";			
+					} else {
+						continue;
 					}
-				} else {
-					continue;
 				}
 			}
 			if($outputJson!="[") {
 				$outputJson = substr_replace($outputJson, "", -1);
 			}
 			$outputJson.="]";
-			echo $outputJson;
 			return $outputJson;
 		}
 
 		// if the record matches the query the function returns true else false
-		private function match($record, $queryObject) {
+		private function match($record, $query) {
 			$flag = 0;
-			foreach($queryObject as $query) {
+			//foreach($queryObject as $query) {
 				$operand = $this->getOperandFromQuery($query);
 				$queryArray = explode($operand, $query);
 				$attributeName = trim($queryArray[0]);
@@ -203,7 +204,7 @@
 					$receievedValueOfRecord = $record[$attributeName];
 					return $this->makeOperation($receievedValueOfRecord, $value, $operand);
 				}
-			}
+			//}
 			
 		}
 
@@ -342,7 +343,11 @@
 ?>
 
 <?php
-  	$instance = new LifeDB("jsondb_1.json");
+  	$instance = new LifeDB("fiddleData_new.js");
+  	//echo $instance->find("FiddleToCategory", "*", "");
+  	//echo $instance->find("FiddleToCategory", "[\"fiddle_id\"]", "");
+  	echo $instance->find("FiddleToCategory", "*", "[\"category_id @eq 1\", \"category_id @eq 13\"]");
+
   	// $instance->insert("student","{\"name\":\"arindam\",\"title\":\"karmokar\"}");
   	// $instance->insert("student","{\"name\":\"piklu\"}");
   	// $instance->insert("teacher","{\"name\":\"shyamal\"}");
@@ -350,6 +355,6 @@
   	// $instance->insert("student","[{\"name\":\"arindam1\"},{\"name\":\"piklu1\"}]");
   	//$instance->find("student", "*", "");
  	//$instance->find("student", "[\"name\",\"title\",\"class\"]", "");
- 	$instance->find("student", "[\"name\",\"class\"]", "[\"name @eq xarindam\"]");	
+ 	//$instance->find("student", "[\"name\",\"class\"]", "[\"name @eq xarindam\"]");	
  	//$instance->find("student", "*", "[\"name @eq arindam\"]");	
 ?>
