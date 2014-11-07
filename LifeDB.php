@@ -30,8 +30,8 @@
 		}
 
 		// this function will be used by user to get any data from page, for multiple data array will be returned,object for single data, 0 for search failed
-		public function find($pageName, $attribute="*", $query="") {
-			return $this->getDataFromDatabase($pageName, $attribute, $query);
+		public function find($pageName, $attribute="*", $query="", $startIndex=0, $numberOfData=-1) {
+			return $this->getDataFromDatabase($pageName, $attribute, $query, $startIndex, $numberOfData);
 		}
 
 		// this function will be called by the user to update data
@@ -109,7 +109,7 @@
 			return true;
 		}
 
-		private function getDataFromDatabase($pageName, $attribute, $query) {
+		private function getDataFromDatabase($pageName, $attribute, $query, $startIndex, $numberOfData) {
 			$fileContent = $this->fetchTotalContentOfFileAsJson();
 			$jsonDataFromFile = json_decode($fileContent, true);//* file's json data total
 			$fileContent = NULL;
@@ -152,9 +152,29 @@
 						}
 					}
 					$outputJson = $this->createJSONDataFromSpecifiedQueryAndAttribute($pageData,$queryObject, $attributeObject);
+					if($numberOfData != -1) {
+						$outputJson = $this->pickChunkOfDataFromAllData($outputJson, $startIndex, $numberOfData);
+					}
 					return $outputJson;
 				}
 			}
+		}
+
+		private function pickChunkOfDataFromAllData($data, $startIndex, $numberOfData) {
+			$dataArray = json_decode($data, true);
+			$index = -1;
+			$newDataArray = array();
+			foreach($dataArray as $record) {
+				$index++;
+				if($index<$startIndex) {
+					continue;
+				}
+				if($index>($startIndex+$numberOfData-1)) {
+					break;
+				}
+				array_push($newDataArray, $record);
+			}
+			return json_encode($newDataArray);
 		}
 
 		private function createJSONDataFromSpecifiedQueryAndAttribute($pageData,$queryObject, $attributeObject) {
@@ -346,7 +366,7 @@
   	$instance = new LifeDB("fiddleData_new.js");
   	//echo $instance->find("FiddleToCategory", "*", "");
   	//echo $instance->find("FiddleToCategory", "[\"fiddle_id\"]", "");
-  	echo $instance->find("FiddleToCategory", "*", "[\"category_id @eq 1\", \"category_id @eq 13\"]");
+  	echo $instance->find("FiddleToCategory", "*", "[\"category_id @eq 1\", \"category_id @eq 13\"]", 0, 2);
 
   	// $instance->insert("student","{\"name\":\"arindam\",\"title\":\"karmokar\"}");
   	// $instance->insert("student","{\"name\":\"piklu\"}");
