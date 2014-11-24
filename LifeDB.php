@@ -236,6 +236,30 @@
 				} else {
 					return false;
 				}
+			} else if($operand === "@gt") {
+				if(parseInt($receievedValueOfRecord) > parseInt($value)) {
+					return true;
+				} else {
+					return false;
+				}
+			} else if($operand === "@lt") {
+				if(parseInt($receievedValueOfRecord) < parseInt($value)) {
+					return true;
+				} else {
+					return false;
+				}
+			} else if($operand === "@ge") {
+				if(parseInt($receievedValueOfRecord) >= parseInt($value)) {
+					return true;
+				} else {
+					return false;
+				}
+			} else if($operand === "@le") {
+				if(parseInt($receievedValueOfRecord) <= parseInt($value)) {
+					return true;
+				} else {
+					return false;
+				}
 			}
 		}
 
@@ -366,7 +390,8 @@
   	$instance = new LifeDB("fiddleData_new.js");
   	//echo $instance->find("FiddleToCategory", "*", "");
   	//echo $instance->find("FiddleToCategory", "[\"fiddle_id\"]", "");
-  	echo $instance->find("FiddleToCategory", "*", "[\"category_id @eq 1\", \"category_id @eq 13\"]", 0, 2);
+  	//echo $instance->find("FiddleToCategory", "[\"fiddle_id\"]", "[\"category_id @eq 1\", \"category_id @eq 13\"]", 0, 2);
+  	echo $instance->find("FiddleToCategory", "*", "[\"category_id @eq 1\", \"fiddle_id @eq 2\"]");
 
   	// $instance->insert("student","{\"name\":\"arindam\",\"title\":\"karmokar\"}");
   	// $instance->insert("student","{\"name\":\"piklu\"}");
