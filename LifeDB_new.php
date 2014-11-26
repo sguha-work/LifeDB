@@ -46,8 +46,7 @@
 			if(!$this->pageExists($contentOfFile, $pageName)) {
 				$contentOfFile[$pageName] = array();
 			}
-			$this->insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject);
-			return true;
+			return $this->insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject);
 		}
 
 		// this function inser a record to the specified page of database
