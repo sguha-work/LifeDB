@@ -22,23 +22,37 @@
 		public function insert($pageName, $record) { // insert a record under specified page
 			return $this->initiateInsertProcess($pageName, $record);
 		}
+		public function destroy($willDeleteFileAlso = false) { // destroy the whole database
+			$this->destroyDatabase($willDeleteFileAlso);
+		}
+		public function find($pageName, $query) { // search functionality
+
+		}
 		// end of public functions accessible by users
 
-
+		private function destroyDatabase($willDeleteFileAlso) {
+			unlink($this->dbFileName); 
+			if(!$willDeleteFileAlso) {// if file should be kept then reinitiating an empty file
+				$this->initiateEmptyFile();
+			}
+			return true;
+		}
 		private function initiateInsertProcess($pageName, $record) {
 			$recordAsJsonObject = json_decode($record, true);
 			if(!$recordAsJsonObject) { // if the record is not in valid json format returning false
 				return false;
 			}
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
-			if($this->pageExists($contentOfFile, $pageName)) {
-				$this->insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject);
+			if(!$this->pageExists($contentOfFile, $pageName)) {
+				$contentOfFile[$pageName] = array();
 			}
+			$this->insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject);
+			return true;
 		}
 
 		// this function inser a record to the specified page of database
 		private function insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject) {
-			$contentOfFile[$pageName] = $recordAsJsonObject;
+			array_push($contentOfFile[$pageName], $recordAsJsonObject);
 			return $this->writeJsonStringToFile(json_encode($contentOfFile[$pageName]));
 		}
 		// check page exists in database or not
