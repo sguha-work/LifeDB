@@ -25,11 +25,35 @@
 		public function destroy($willDeleteFileAlso = false) { // destroy the whole database
 			$this->destroyDatabase($willDeleteFileAlso);
 		}
-		public function find($pageName, $query) { // search functionality
-
+		public function find($pageName, $query="") { // search functionality
+			return $this->searchFromDatabase($pageName, $query);
 		}
 		// end of public functions accessible by users
 
+		
+		private function searchFromDatabase($pageName, $query) {
+			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
+			$queryArray;
+			if($query!="") {
+				$queryArray = json_decode($query, true);
+			}
+			if(!$this->pageExists($contentOfFile, $pageName)) {
+				return false;
+			} else {
+				if($query!=""&&!$queryArray) {
+					return false;
+				}
+				$pageData = $contentOfFile[$pageName];
+				$contentOfFile = NULL;
+				return $this->gatherDataFromPage($pageData, $queryArray);
+			}
+		}
+
+		private function gatherDataFromPage($pageData, $queryArray) {
+			
+		}
+
+		//destroy the whole database if willDeleteFileAlso variable is set true then the db file will be deleted too
 		private function destroyDatabase($willDeleteFileAlso) {
 			unlink($this->dbFileName); 
 			if(!$willDeleteFileAlso) {// if file should be kept then reinitiating an empty file
@@ -43,7 +67,7 @@
 				return false;
 			}
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
-			if(!$this->pageExists($contentOfFile, $pageName)) {
+			if(!$this->pageExists($contentOfFile, $pageName)) {// if the pages doesnt exists create an empty aray for the page
 				$contentOfFile[$pageName] = array();
 			}
 			return $this->insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject);
