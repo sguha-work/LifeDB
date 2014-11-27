@@ -25,34 +25,85 @@
 		public function destroy($willDeleteFileAlso = false) { // destroy the whole database
 			$this->destroyDatabase($willDeleteFileAlso);
 		}
-		public function find($pageName, $query="") { // search functionality
-			return $this->searchFromDatabase($pageName, $query);
+		public function find($pageName, $attributeName="*", $query="") { // search functionality
+			return json_encode($this->searchFromDatabase($pageName, $attributeName, $query));
 		}
 		// end of public functions accessible by users
 
 		
-		private function searchFromDatabase($pageName, $query) {
+		private function searchFromDatabase($pageName,, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			$queryArray;
-			if($query!="") {
+			if($query != "") {
 				$queryArray = json_decode($query, true);
+			} else {
+				$queryArray = array();
+			}
+			$attributeNameArray;
+			if($attributeName != "*") {
+				$attributeNameArray = json_decode($attributeName, true);
+			} else {
+				$attributeNameArray = array();
+				array_push($attributeNameArray, "*");
 			}
 			if(!$this->pageExists($contentOfFile, $pageName)) {
 				return false;
 			} else {
-				if($query!=""&&!$queryArray) {
+				if($query!=""&&!$queryArray) { // provided query is not valid
+					return false;
+				}
+				if($attributeName!="*" && !$attributeNameArray) { // provide attribute name structure is invalid
 					return false;
 				}
 				$pageData = $contentOfFile[$pageName];
 				$contentOfFile = NULL;
-				return $this->gatherDataFromPage($pageData, $queryArray);
+				return $this->gatherDataFromPage($pageData,$attributeNameArray, $queryArray);
 			}
 		}
 
-		private function gatherDataFromPage($pageData, $queryArray) {
-			
+		private function gatherDataFromPage($pageData,$attributeNameArray, $queryArray) {
+			if(count($queryArray) == 0) {//if query array is empty
+				$data = $pageData;
+				$pageData = NULL;
+				if(count($attributeNameArray) == 1 && $attributeNameArray[0] == "*") {// if no attribute is specified
+					return $data;
+				} else {
+					return $this->getDataFilterredByAttribute($data, $attribute);
+				}
+			} else { // if query array is not empty
+				$data = $this->getDataFromPageFilterredByQuery($pageData, $queryArray);
+				if(count($attributeNameArray) == 1 && $attributeNameArray[0] == "*") { // if no attribute is specified
+					return $data;
+				} else {
+					return $this->getDataFilterredByAttribute(($data, $attribute);
+				}
+			}
 		}
 
+		// filterred the provided data based on attirubte
+		private function getDataFilterredByAttribute($data, $attribute) {
+			$resultArray = array();
+			for($index=0; $index<count($data); $index++) {
+				$chunk = array();
+				$record = $data[$index];
+				$recordAsJson = json_encode($record);
+				for($attributeIndex=0; $attributeIndex<count($attribute); $attributeIndex++) {
+					$attributeName = $attribute[$attributeIndex];
+					if(!strrpos($recordAsJson, $attributeName)) {
+						$chunk[$attributeName] = NULL;
+					} else {
+						$tempArray = explode($attributeName, $recordAsJson);
+						$chunk[$attributeName] = explode(":", $tempArray[1])[1]; 
+					}
+				}
+				array_push($resultArray, $chunk);
+			}
+			return $resultArray;
+		}
+
+		private function getDataFromPageFilterredByQuery($pageData, $queryArray) {
+
+		}
 		//destroy the whole database if willDeleteFileAlso variable is set true then the db file will be deleted too
 		private function destroyDatabase($willDeleteFileAlso) {
 			unlink($this->dbFileName); 
