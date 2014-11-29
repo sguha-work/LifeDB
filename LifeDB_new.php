@@ -104,7 +104,17 @@
 		}
 
 		private function checkRecordWithQuery(record, $query) {// check record with query
+			$queryArray = $this->splitQueryBasedOnANDoperation($query);
+		}
 
+		private function splitQueryBasedOnANDoperation($query) {// split query based on AND operation
+			$resultArray = array();
+			if(strpos($query, "&&")){
+				$resultArray = explode("&&", $query);
+			} else {
+				array_push($resultArray, $query);
+			}
+			return $resultArray;
 		}
 		//destroy the whole database if willDeleteFileAlso variable is set true then the db file will be deleted too
 		private function destroyDatabase($willDeleteFileAlso) {
