@@ -33,12 +33,7 @@
 		
 		private function searchFromDatabase($pageName,, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
-			$queryArray;
-			if($query != "") {
-				$queryArray = json_decode($query, true);
-			} else {
-				$queryArray = array();
-			}
+			
 			$attributeNameArray;
 			if($attributeName != "*") {
 				$attributeNameArray = json_decode($attributeName, true);
@@ -49,19 +44,16 @@
 			if(!$this->pageExists($contentOfFile, $pageName)) {
 				return false;
 			} else {
-				if($query!=""&&!$queryArray) { // provided query is not valid
-					return false;
-				}
 				if($attributeName!="*" && !$attributeNameArray) { // provide attribute name structure is invalid
 					return false;
 				}
 				$pageData = $contentOfFile[$pageName];
 				$contentOfFile = NULL;
-				return $this->gatherDataFromPage($pageData,$attributeNameArray, $queryArray);
+				return $this->gatherDataFromPage($pageData,$attributeNameArray, $query);
 			}
 		}
 
-		private function gatherDataFromPage($pageData,$attributeNameArray, $queryArray) {
+		private function gatherDataFromPage($pageData,$attributeNameArray, $query) {
 			if(count($queryArray) == 0) {//if query array is empty
 				$data = $pageData;
 				$pageData = NULL;
@@ -71,7 +63,7 @@
 					return $this->getDataFilterredByAttribute($data, $attribute);
 				}
 			} else { // if query array is not empty
-				$data = $this->getDataFromPageFilterredByQuery($pageData, $queryArray);
+				$data = $this->getDataFromPageFilterredByQuery($pageData, $query);
 				if(count($attributeNameArray) == 1 && $attributeNameArray[0] == "*") { // if no attribute is specified
 					return $data;
 				} else {
@@ -101,7 +93,17 @@
 			return $resultArray;
 		}
 
-		private function getDataFromPageFilterredByQuery($pageData, $queryArray) {
+		private function getDataFromPageFilterredByQuery($pageData, $query) {//checkrecords from a page and if matchfoundreturnthem
+			$resultArray = array();
+			for($index=0; $index<=count($pageData); $index++) {
+				if($this->checkRecordWithQuery($pageData[$index], $query)) {
+					array_push($resultArray, $pageData[$index]);
+				}
+			}
+			return $resultArray;
+		}
+
+		private function checkRecordWithQuery(record, $query) {// check record with query
 
 		}
 		//destroy the whole database if willDeleteFileAlso variable is set true then the db file will be deleted too
