@@ -129,6 +129,87 @@
 				return $this->checkEqual($record, $separatedQuery);
 			} else if($separatedQuery['operator'] == "@lt") {
 				return $this->checkLessThan($record, $separatedQuery);
+			} else if($separatedQuery['operator'] == "@gt") {
+				return $this->checkGreterThan($record, $separatedQuery);
+			} else if($separatedQuery['operator'] == "@le") {
+				return $this->checkLessThanEqual($record, $separatedQuery);
+			} else if($separatedQuery['operator'] == "@ge") {
+				return $this->checkGreterThanEqual($record, $separatedQuery);
+			}
+		}
+		private function checkGreterThanEqual($record, $separatedQuery) {
+			$attributeName = $separatedQuery['attribute'];
+			$value = $separatedQuery['value'];
+			$separatedQuery = NULL;
+			if(!is_numeric($value)) { // if given value to check is non numeric returning false
+				return false;
+			}
+			$recordJSON = json_encode($record);
+			$record = NULL;
+			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
+				return false;
+			} else {
+				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
+				if(is_numeric($valueFromRecord)) {
+					$value = (float)$value;
+					if($valueFromRecord>=$value) { // if value from record is less than given value return true
+						return true;
+					} else {
+						return false;
+					}
+				} else {// if value from record is non numeric return false
+					return false;
+				}
+			}
+		}
+		private function checkLessThanEqual($record, $separatedQuery) {
+			$attributeName = $separatedQuery['attribute'];
+			$value = $separatedQuery['value'];
+			$separatedQuery = NULL;
+			if(!is_numeric($value)) { // if given value to check is non numeric returning false
+				return false;
+			}
+			$recordJSON = json_encode($record);
+			$record = NULL;
+			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
+				return false;
+			} else {
+				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
+				if(is_numeric($valueFromRecord)) {
+					$value = (float)$value;
+					if($valueFromRecord<=$value) { // if value from record is less than given value return true
+						return true;
+					} else {
+						return false;
+					}
+				} else {// if value from record is non numeric return false
+					return false;
+				}
+			}
+		}
+		private function checkGreterThan($record, $separatedQuery) {
+			$attributeName = $separatedQuery['attribute'];
+			$value = $separatedQuery['value'];
+			$separatedQuery = NULL;
+			if(!is_numeric($value)) { // if given value to check is non numeric returning false
+				return false;
+			}
+			$recordJSON = json_encode($record);
+			$record = NULL;
+			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
+				return false;
+			} else {
+				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
+				if(is_numeric($valueFromRecord)) {
+					$value = (float)$value;
+					if($valueFromRecord>$value) { // if value from record is less than given value return true
+						return true;
+					} else {
+						return false;
+					}
+				} else {// if value from record is non numeric return false
+					return false;
+				}
 			}
 		}
 		private function checkLessThan($record, $separatedQuery) {
