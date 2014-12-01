@@ -1,9 +1,7 @@
 <?php
-
 	class LifeDB {
 		// this variable will holds the database file name
 		private $dbFileName;
-
 		public function __construct($fileName="") {
 			if(trim($fileName) == "") {
 				$this->dbFileName = $this->getRandomFileName();
@@ -14,10 +12,7 @@
 					$this->initiateEmptyFile();	
 				}
 			}
-
 		}
-
-
 		// public functions accessible by users
 		public function insert($pageName, $record) { // insert a record under specified page
 			return $this->initiateInsertProcess($pageName, $record);
@@ -29,7 +24,6 @@
 			return json_encode($this->searchFromDatabase($pageName, $attributeName, $query));
 		}
 		// end of public functions accessible by users
-
 		
 		private function searchFromDatabase($pageName,, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
@@ -52,7 +46,6 @@
 				return $this->gatherDataFromPage($pageData,$attributeNameArray, $query);
 			}
 		}
-
 		private function gatherDataFromPage($pageData,$attributeNameArray, $query) {
 			if(count($queryArray) == 0) {//if query array is empty
 				$data = $pageData;
@@ -71,7 +64,6 @@
 				}
 			}
 		}
-
 		// filterred the provided data based on attirubte
 		private function getDataFilterredByAttribute($data, $attribute) {
 			$resultArray = array();
@@ -92,7 +84,6 @@
 			}
 			return $resultArray;
 		}
-
 		private function getDataFromPageFilterredByQuery($pageData, $query) {//checkrecords from a page and if matchfoundreturnthem
 			$resultArray = array();
 			for($index=0; $index<=count($pageData); $index++) {
@@ -102,14 +93,24 @@
 			}
 			return $resultArray;
 		}
-
 		private function checkRecordWithQuery(record, $query) {// check record with query
 			$queryArray = $this->splitQueryBasedOnANDoperation($query);
+			$flag = 1;
+			for($index=0; $index<count($queryArray); $index++) {
+				if(!$this->applyQueryOnRecord($record, $queryArray[$index])) {
+					$flag = 0;
+					break;
+				}
+			}
+			if($flag) {
+				return true;
+			} else {
+				return false;
+			}
 		}
-
 		private function splitQueryBasedOnANDoperation($query) {// split query based on AND operation
 			$resultArray = array();
-			if(strpos($query, "&&")){
+			if(strpos($query, "&&") != false){
 				$resultArray = explode("&&", $query);
 			} else {
 				array_push($resultArray, $query);
@@ -135,7 +136,6 @@
 			}
 			return $this->insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject);
 		}
-
 		// this function inser a record to the specified page of database
 		private function insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject) {
 			array_push($contentOfFile[$pageName], $recordAsJsonObject);
@@ -153,7 +153,6 @@
 		private function fetchTotalContentOfFileAsJsonString() {
 			return file_get_contents($this->dbFileName);
 		}
-
 		// this function writes a json string in the database file
 		private function writeJsonStringToFile($content) {
 			$output = file_put_contents($this->dbFileName, $content);
@@ -163,7 +162,6 @@
 				return true;
 			}
 		}
-
 		// if no database file name is specified this file will return a random file name based on availebility
 		private function getRandomFileName() {
 			$fileNameExtentionArray = array();
@@ -193,9 +191,8 @@
 			$unusedNewFileName = "lifedb_" . $index.".json";
 			return $unusedNewFileName;
 		}
-
-		// this function initiate an empty file with an empty json object
-		private function initiateEmptyFile() {
+		
+		private function initiateEmptyFile() {// this function initiate an empty file with an empty json object
 			$result = file_put_contents ($this->dbFileName, "{}");
 			if(!$result) {
 				echo "cannot create a file. Permission denied";
