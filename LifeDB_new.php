@@ -53,31 +53,31 @@
 				if(count($attributeNameArray) == 1 && $attributeNameArray[0] == "*") {// if no attribute is specified
 					return $data;
 				} else {
-					return $this->getDataFilterredByAttribute($data, $attribute);
+					return $this->getDataFilterredByAttribute($data, $attributeNameArray);
 				}
 			} else { // if query array is not empty
 				$data = $this->getDataFromPageFilterredByQuery($pageData, $query);
 				if(count($attributeNameArray) == 1 && $attributeNameArray[0] == "*") { // if no attribute is specified
 					return $data;
 				} else {
-					return $this->getDataFilterredByAttribute($data, $attribute);
+					return $this->getDataFilterredByAttribute($data, $attributeNameArray);
 				}
 			}
 		}
 		// filterred the provided data based on attirubte
-		private function getDataFilterredByAttribute($data, $attribute) {
+		private function getDataFilterredByAttribute($data, $attributeNameArray) {
 			$resultArray = array();
 			for($index=0; $index<count($data); $index++) {
 				$chunk = array();
 				$record = $data[$index];
 				$recordAsJson = json_encode($record);
-				for($attributeIndex=0; $attributeIndex<count($attribute); $attributeIndex++) {
-					$attributeName = $attribute[$attributeIndex];
-					if(!strrpos($recordAsJson, $attributeName)) {
+				for($attributeIndex=0; $attributeIndex<count($attributeNameArray); $attributeIndex++) {
+					$attributeName = trim($attributeNameArray[$attributeIndex]);
+					if(strrpos($recordAsJson, $attributeName) == false) {
 						$chunk[$attributeName] = NULL;
 					} else {
 						$tempArray = explode($attributeName, $recordAsJson);
-						$chunk[$attributeName] = explode(":", $tempArray[1])[1]; 
+						$chunk[$attributeName] = explode(',',explode(":", $tempArray[1])[1])[0];
 					}
 				}
 				array_push($resultArray, $chunk);
