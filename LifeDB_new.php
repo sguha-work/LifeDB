@@ -127,14 +127,41 @@
 			$separatedQuery = $this->separateQueryToAttributeNameOperatorValue($singleQuery);
 			if($separatedQuery['operator'] == "@eq") {
 				return $this->checkEqual($record, $separatedQuery);
+			} else if($separatedQuery['operator'] == "@lt") {
+				return $this->checkLessThan($record, $separatedQuery);
 			}
 		}
-		private function checkEqual($record, $separatedQuery) {
-			$recordJSON = json_encode($record);
-			$record = NULL;
+		private function checkLessThan($record, $separatedQuery) {
 			$attributeName = $separatedQuery['attribute'];
 			$value = $separatedQuery['value'];
 			$separatedQuery = NULL;
+			if(!is_numeric($value)) { // if given value to check is non numeric returning false
+				return false;
+			}
+			$recordJSON = json_encode($record);
+			$record = NULL;
+			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
+				return false;
+			} else {
+				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
+				if(is_numeric($valueFromRecord)) {
+					$value = (float)$value;
+					if($valueFromRecord<$value) { // if value from record is less than given value return true
+						return true;
+					} else {
+						return false;
+					}
+				} else {// if value from record is non numeric return false
+					return false;
+				}
+			}
+		}
+		private function checkEqual($record, $separatedQuery) {
+			$attributeName = $separatedQuery['attribute'];
+			$value = $separatedQuery['value'];
+			$separatedQuery = NULL;
+			$recordJSON = json_encode($record);
+			$record = NULL;
 			$stringOfAttributeAndValue = '"'.$attributeName.'":'.$value;// required if value is a string
 			$string2OfAttributeAndValue = '"'.$attributeName.'":"'.$value.'"';// requirred if value is a number
 			if(strpos($recordJSON, $stringOfAttributeAndValue) == false) {
