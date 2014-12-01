@@ -135,6 +135,25 @@
 				return $this->checkLessThanEqual($record, $separatedQuery);
 			} else if($separatedQuery['operator'] == "@ge") {
 				return $this->checkGreterThanEqual($record, $separatedQuery);
+			} else if($separatedQuery['operator'] == "@ne") {
+				return $this->checkNotEqual($record, $separatedQuery);
+			}
+		}
+		private function checkNotEqual($record, $separatedQuery) { // checking not equal
+			$attributeName = $separatedQuery['attribute'];
+			$value = $separatedQuery['value'];
+			$separatedQuery = NULL;
+			$recordJSON = json_encode($record);
+			$record = NULL;
+			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
+				return false;
+			} else {
+				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
+				if($valueFromRecord!=$value) { // if value from record is not equal given value return true
+					return true;
+				} else {
+					return false;
+				}
 			}
 		}
 		private function checkGreterThanEqual($record, $separatedQuery) {
