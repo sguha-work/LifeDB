@@ -139,17 +139,29 @@
 				return $this->checkNotEqual($record, $separatedQuery);
 			}
 		}
+		private function getValueByAttributeNameFromRecord($attributeName, $recordJSON) {
+			$value = (string)(explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0]);
+			if($value[(strlen($value)-1)]=="}") {
+				$value = substr($value, 0, -1);
+			}
+			return $value;
+		}
 		private function checkNotEqual($record, $separatedQuery) { // checking not equal
 			$attributeName = $separatedQuery['attribute'];
-			$value = $separatedQuery['value'];
+			$value="";
+			if(gettype($separatedQuery['value'])!="string") {
+				$value = '"'.$separatedQuery['value'].'"';
+			} else {
+				$value = $separatedQuery['value'];
+			}
 			$separatedQuery = NULL;
 			$recordJSON = json_encode($record);
 			$record = NULL;
 			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
 				return false;
 			} else {
-				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
-				if($valueFromRecord!=$value) { // if value from record is not equal given value return true
+				$valueFromRecord = $this->getValueByAttributeNameFromRecord($attributeName, $recordJSON);
+				if(trim($valueFromRecord)!=trim($value)) { // if value from record is not equal given value return true
 					return true;
 				} else {
 					return false;
@@ -168,7 +180,7 @@
 			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
 				return false;
 			} else {
-				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
+				$valueFromRecord = floatval(trim($this->getValueByAttributeNameFromRecord($attributeName, $recordJSON),"\""));
 				if(is_numeric($valueFromRecord)) {
 					$value = (float)$value;
 					if($valueFromRecord>=$value) { // if value from record is less than given value return true
@@ -193,7 +205,7 @@
 			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
 				return false;
 			} else {
-				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
+				$valueFromRecord = floatval(trim($this->getValueByAttributeNameFromRecord($attributeName, $recordJSON),"\""));
 				if(is_numeric($valueFromRecord)) {
 					$value = (float)$value;
 					if($valueFromRecord<=$value) { // if value from record is less than given value return true
@@ -218,7 +230,7 @@
 			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
 				return false;
 			} else {
-				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
+				$valueFromRecord = floatval(trim($this->getValueByAttributeNameFromRecord($attributeName, $recordJSON),"\""));
 				if(is_numeric($valueFromRecord)) {
 					$value = (float)$value;
 					if($valueFromRecord>$value) { // if value from record is less than given value return true
@@ -243,7 +255,7 @@
 			if(strpos($recordJSON, $attributeName) == false) {// if attribute doesnot exists return false
 				return false;
 			} else {
-				$valueFromRecord = explode(",", explode(":",explode($attributeName, $recordJSON)[1])[1])[0];
+				$valueFromRecord = floatval(trim($this->getValueByAttributeNameFromRecord($attributeName, $recordJSON),"\""));
 				if(is_numeric($valueFromRecord)) {
 					$value = (float)$value;
 					if($valueFromRecord<$value) { // if value from record is less than given value return true
