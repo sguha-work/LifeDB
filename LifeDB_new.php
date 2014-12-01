@@ -25,7 +25,7 @@
 		}
 		// end of public functions accessible by users
 		
-		private function searchFromDatabase($pageName,, $attributeName, $query) {
+		private function searchFromDatabase($pageName, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			
 			$attributeNameArray;
@@ -60,7 +60,7 @@
 				if(count($attributeNameArray) == 1 && $attributeNameArray[0] == "*") { // if no attribute is specified
 					return $data;
 				} else {
-					return $this->getDataFilterredByAttribute(($data, $attribute);
+					return $this->getDataFilterredByAttribute($data, $attribute);
 				}
 			}
 		}
@@ -93,7 +93,7 @@
 			}
 			return $resultArray;
 		}
-		private function checkRecordWithQuery(record, $query) {// check record with query
+		private function checkRecordWithQuery($record, $query) {// check record with query
 			$queryArray = $this->splitQueryBasedOnANDoperation($query);
 			$flag = 1;
 			for($index=0; $index<count($queryArray); $index++) {
@@ -141,7 +141,7 @@
 				if(strpos($recordJSON, $string2OfAttributeAndValue) == false) {
 					return false;
 				} else {
-					return true
+					return true;
 				}
 			} else {
 				return true;
