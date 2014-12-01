@@ -125,6 +125,7 @@
 		}
 		private function applyIndividualQueryOnRecord($record, $singleQuery) {
 			$separatedQuery = $this->separateQueryToAttributeNameOperatorValue($singleQuery);
+
 		}
 		private function separateQueryToAttributeNameOperatorValue($singleQuery) {// pick up attribute name, value and operator from the query
 			$separatedArray = array();
@@ -151,6 +152,11 @@
 			} else if(strpos($singleQuery, "@ge") != false) { // @ge greater than equal operator
 				$separatedArray['operator'] = "@ge";
 				$splitedQuery = explode("@ge", $singleQuery);
+				$separatedArray['attribute'] = $splitedQuery[0];
+				$separatedArray['value'] = $splitedQuery[1];  
+			} else if(strpos($singleQuery, "@ne") != false) { // @ne not equal operator
+				$separatedArray['operator'] = "@ne";
+				$splitedQuery = explode("@ne", $singleQuery);
 				$separatedArray['attribute'] = $splitedQuery[0];
 				$separatedArray['value'] = $splitedQuery[1];  
 			}
