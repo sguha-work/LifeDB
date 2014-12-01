@@ -97,7 +97,7 @@
 			$queryArray = $this->splitQueryBasedOnANDoperation($query);
 			$flag = 1;
 			for($index=0; $index<count($queryArray); $index++) {
-				if(!$this->applyQueryOnRecord($record, $queryArray[$index])) {
+				if(!$this->applyORseperatedQueryOnRecord($record, $queryArray[$index])) {
 					$flag = 0;
 					break;
 				}
@@ -107,6 +107,63 @@
 			} else {
 				return false;
 			}
+		}
+		private function applyORseperatedQueryOnRecord($record, $queryChunk) {
+			$queryChunkArray = $this->splitQueryBasedOnORoperation($queryChunk);
+			$flag = 0;
+			for($index=0; $index<count($queryChunkArray); $index++) {
+				if($this->applyIndividualQueryOnRecord($record, $queryChunkArray[$index])) {
+					$flag = 1;
+					break;
+				}
+			}
+			if($flag) {
+				return true;
+			} else {
+				return false;
+			}	
+		}
+		private function applyIndividualQueryOnRecord($record, $singleQuery) {
+			$separatedQuery = $this->separateQueryToAttributeNameOperatorValue($singleQuery);
+		}
+		private function separateQueryToAttributeNameOperatorValue($singleQuery) {// pick up attribute name, value and operator from the query
+			$separatedArray = array();
+			if(strpos($singleQuery, "@eq") != false) { // @eq equal opearator
+				$separatedArray['operator'] = "@eq";
+				$splitedQuery = explode("@eq", $singleQuery);
+				$separatedArray['attribute'] = $splitedQuery[0];
+				$separatedArray['value'] = $splitedQuery[1];  
+			} else if(strpos($singleQuery, "@lt") != false) { // @lt less than opearator
+				$separatedArray['operator'] = "@lt";
+				$splitedQuery = explode("@lt", $singleQuery);
+				$separatedArray['attribute'] = $splitedQuery[0];
+				$separatedArray['value'] = $splitedQuery[1];  
+			} else if(strpos($singleQuery, "@gt") != false) { // @gt greater than operator
+				$separatedArray['operator'] = "@gt";
+				$splitedQuery = explode("@gt", $singleQuery);
+				$separatedArray['attribute'] = $splitedQuery[0];
+				$separatedArray['value'] = $splitedQuery[1];  
+			} else if(strpos($singleQuery, "@le") != false) { // @le lessthan equal operator
+				$separatedArray['operator'] = "@le";
+				$splitedQuery = explode("@le", $singleQuery);
+				$separatedArray['attribute'] = $splitedQuery[0];
+				$separatedArray['value'] = $splitedQuery[1];  
+			} else if(strpos($singleQuery, "@ge") != false) { // @ge greater than equal operator
+				$separatedArray['operator'] = "@ge";
+				$splitedQuery = explode("@ge", $singleQuery);
+				$separatedArray['attribute'] = $splitedQuery[0];
+				$separatedArray['value'] = $splitedQuery[1];  
+			}
+			return $separatedArray;
+		}
+		private function splitQueryBasedOnORoperation($query) {// split query based on OR operation
+			$resultArray = array();
+			if(strpos($query, "||") != false){
+				$resultArray = explode("||", $query);
+			} else {
+				array_push($resultArray, $query);
+			}
+			return $resultArray;
 		}
 		private function splitQueryBasedOnANDoperation($query) {// split query based on AND operation
 			$resultArray = array();
