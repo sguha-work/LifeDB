@@ -47,7 +47,7 @@
 			}
 		}
 		private function gatherDataFromPage($pageData,$attributeNameArray, $query) {
-			if(count($queryArray) == 0) {//if query array is empty
+			if(trim($query) == "") {//if query array is empty
 				$data = $pageData;
 				$pageData = NULL;
 				if(count($attributeNameArray) == 1 && $attributeNameArray[0] == "*") {// if no attribute is specified
@@ -86,7 +86,7 @@
 		}
 		private function getDataFromPageFilterredByQuery($pageData, $query) {//checkrecords from a page and if matchfoundreturnthem
 			$resultArray = array();
-			for($index=0; $index<=count($pageData); $index++) {
+			for($index=0; $index<count($pageData); $index++) {
 				if($this->checkRecordWithQuery($pageData[$index], $query)) {
 					array_push($resultArray, $pageData[$index]);
 				}
@@ -97,7 +97,7 @@
 			$queryArray = $this->splitQueryBasedOnANDoperation($query);
 			$flag = 1;
 			for($index=0; $index<count($queryArray); $index++) {
-				if(!$this->applyORseperatedQueryOnRecord($record, $queryArray[$index])) {
+				if(!$this->applyORseperatedQueryOnRecord($record, trim($queryArray[$index]))) {
 					$flag = 0;
 					break;
 				}
@@ -152,33 +152,33 @@
 			if(strpos($singleQuery, "@eq") != false) { // @eq equal opearator
 				$separatedArray['operator'] = "@eq";
 				$splitedQuery = explode("@eq", $singleQuery);
-				$separatedArray['attribute'] = $splitedQuery[0];
-				$separatedArray['value'] = $splitedQuery[1];  
+				$separatedArray['attribute'] = trim($splitedQuery[0]);
+				$separatedArray['value'] = trim($splitedQuery[1]);  
 			} else if(strpos($singleQuery, "@lt") != false) { // @lt less than opearator
 				$separatedArray['operator'] = "@lt";
 				$splitedQuery = explode("@lt", $singleQuery);
-				$separatedArray['attribute'] = $splitedQuery[0];
-				$separatedArray['value'] = $splitedQuery[1];  
+				$separatedArray['attribute'] = trim($splitedQuery[0]);
+				$separatedArray['value'] = trim($splitedQuery[1]);  
 			} else if(strpos($singleQuery, "@gt") != false) { // @gt greater than operator
 				$separatedArray['operator'] = "@gt";
 				$splitedQuery = explode("@gt", $singleQuery);
-				$separatedArray['attribute'] = $splitedQuery[0];
-				$separatedArray['value'] = $splitedQuery[1];  
+				$separatedArray['attribute'] = trim($splitedQuery[0]);
+				$separatedArray['value'] = trim($splitedQuery[1]);  
 			} else if(strpos($singleQuery, "@le") != false) { // @le lessthan equal operator
 				$separatedArray['operator'] = "@le";
 				$splitedQuery = explode("@le", $singleQuery);
-				$separatedArray['attribute'] = $splitedQuery[0];
-				$separatedArray['value'] = $splitedQuery[1];  
+				$separatedArray['attribute'] = trim($splitedQuery[0]);
+				$separatedArray['value'] = trim($splitedQuery[1]);  
 			} else if(strpos($singleQuery, "@ge") != false) { // @ge greater than equal operator
 				$separatedArray['operator'] = "@ge";
 				$splitedQuery = explode("@ge", $singleQuery);
-				$separatedArray['attribute'] = $splitedQuery[0];
-				$separatedArray['value'] = $splitedQuery[1];  
+				$separatedArray['attribute'] = trim($splitedQuery[0]);
+				$separatedArray['value'] = trim($splitedQuery[1]);  
 			} else if(strpos($singleQuery, "@ne") != false) { // @ne not equal operator
 				$separatedArray['operator'] = "@ne";
 				$splitedQuery = explode("@ne", $singleQuery);
-				$separatedArray['attribute'] = $splitedQuery[0];
-				$separatedArray['value'] = $splitedQuery[1];  
+				$separatedArray['attribute'] = trim($splitedQuery[0]);
+				$separatedArray['value'] = trim($splitedQuery[1]);  
 			}
 			return $separatedArray;
 		}
