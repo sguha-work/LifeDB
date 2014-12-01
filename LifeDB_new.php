@@ -125,7 +125,27 @@
 		}
 		private function applyIndividualQueryOnRecord($record, $singleQuery) {
 			$separatedQuery = $this->separateQueryToAttributeNameOperatorValue($singleQuery);
-
+			if($separatedQuery['operator'] == "@eq") {
+				return $this->checkEqual($record, $separatedQuery);
+			}
+		}
+		private function checkEqual($record, $separatedQuery) {
+			$recordJSON = json_encode($record);
+			$record = NULL;
+			$attributeName = $separatedQuery['attribute'];
+			$value = $separatedQuery['value'];
+			$separatedQuery = NULL;
+			$stringOfAttributeAndValue = '"'.$attributeName.'":'.$value;// required if value is a string
+			$string2OfAttributeAndValue = '"'.$attributeName.'":"'.$value.'"';// requirred if value is a number
+			if(strpos($recordJSON, $stringOfAttributeAndValue) == false) {
+				if(strpos($recordJSON, $string2OfAttributeAndValue) == false) {
+					return false;
+				} else {
+					return true
+				}
+			} else {
+				return true;
+			}
 		}
 		private function separateQueryToAttributeNameOperatorValue($singleQuery) {// pick up attribute name, value and operator from the query
 			$separatedArray = array();
