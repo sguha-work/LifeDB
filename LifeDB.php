@@ -151,11 +151,10 @@
 		private function checkNotEqual($record, $separatedQuery) { // checking not equal
 			$attributeName = $separatedQuery['attribute'];
 			$value="";
-			if(gettype($separatedQuery['value'])!="string") {
-				$value = '"'.$separatedQuery['value'].'"';
-			} else {
-				$value = $separatedQuery['value'];
-			}
+			$value = trim($separatedQuery['value'], '\"');
+			$value = trim($value, '\'');
+			$value = '"'.$value.'"';
+			
 			$separatedQuery = NULL;
 			$recordJSON = json_encode($record);
 			$record = NULL;
