@@ -23,8 +23,19 @@
 		public function find($pageName, $attributeName="*", $query="") { // search functionality
 			return json_encode($this->searchFromDatabase($pageName, $attributeName, $query));
 		}
+		public function update($pageName, $attributeName, $newValue, $query) {
+			return json_encode($this->updateToDatabase($pageName, $attributeName, $newValue, $query)); 
+		}
 		// end of public functions accessible by users
 		
+		private function updateToDatabase($pageName, $attributeName, $newValue, $query) {
+			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
+			if(!isset($contentOfFile[$pageName])) {
+				return false;
+			} else {
+				
+			}
+		}
 		private function searchFromDatabase($pageName, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			
