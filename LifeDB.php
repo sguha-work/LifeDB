@@ -78,6 +78,8 @@
 					} else {
 						$tempArray = explode($attributeName, $recordAsJson);
 						$chunk[$attributeName] = explode(',',explode(":", $tempArray[1])[1])[0];
+						$chunk[$attributeName] = trim($chunk[$attributeName],'\'');
+						$chunk[$attributeName] = trim($chunk[$attributeName],'\"');
 					}
 				}
 				array_push($resultArray, $chunk);
@@ -90,7 +92,7 @@
 				if($this->checkRecordWithQuery($pageData[$index], $query)) {
 					array_push($resultArray, $pageData[$index]);
 				}
-			}
+			} 
 			return $resultArray;
 		}
 		private function checkRecordWithQuery($record, $query) {// check record with query
