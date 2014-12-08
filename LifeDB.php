@@ -23,7 +23,7 @@
 		public function find($pageName, $attributeName="*", $query="") { // search functionality
 			return json_encode($this->searchFromDatabase($pageName, $attributeName, $query));
 		}
-		public function update($pageName, $attributeName, $newValue, $query) {
+		public function update($pageName, $attributeName, $newValue, $query="") {
 			return json_encode($this->updateToDatabase($pageName, $attributeName, $newValue, $query)); 
 		}
 		// end of public functions accessible by users
@@ -33,7 +33,15 @@
 			if(!isset($contentOfFile[$pageName])) {
 				return false;
 			} else {
-				
+				$contentFilteredByQuery;
+				if(trim($query)!="") {
+					$contentFilteredByQuery = $this->searchFromDatabase($pageName,"*", $query);
+				} else {
+					$contentFilteredByQuery = $contentOfFile;
+				}
+				$contentOfFile = NULL;
+				return $contentFilteredByQuery;
+				//$contentFilteredByQuery = $this->updateContent();
 			}
 		}
 		private function searchFromDatabase($pageName, $attributeName, $query) {
