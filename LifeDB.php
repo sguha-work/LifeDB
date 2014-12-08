@@ -40,9 +40,36 @@
 					$contentFilteredByQuery = $contentOfFile;
 				}
 				$contentOfFile = NULL;
+				//$contentFilteredByQuery = $this->updateContent($contentFilteredByQuery, $attributeName, $newValue);
 				return $contentFilteredByQuery;
-				//$contentFilteredByQuery = $this->updateContent();
 			}
+		}
+		private function updateContent($contentFilteredByQuery, $attributeName, $newValue) {
+			$jsonContent = json_encode($contentFilteredByQuery);
+			$contentFilteredByQuery = NULL;
+			$updatedContent = "";
+			$indexForUpdatedContent = 0;
+			for($index=0; $index<strlen($jsonContent); $index++) {
+				if($jsonContent[$index]==$attributeName[0]) {
+					$flag = 0;
+					for($tempIndex=0; $tempIndex<strlen($attributeName); $tempIndex++) {
+						if($jsonContent[$index+$tempIndex]!=$attributeName[$tempIndex]) {
+							$flag = 1;
+							break;
+						}
+					}
+					if($flag == 0) {// attribute value needs to be updated
+
+					} else {
+						$updatedContent[$indexForUpdatedContent] = $jsonContent[$index];
+						$indexForUpdatedContent += 1;	
+					}
+				} else {
+					$updatedContent[$indexForUpdatedContent] = $jsonContent[$index];
+					$indexForUpdatedContent += 1;
+				}
+			}
+			return json_decode($updatedContent, true);
 		}
 		private function searchFromDatabase($pageName, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
