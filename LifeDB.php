@@ -58,24 +58,12 @@
 						}
 					}
 					if($flag == 0) {// attribute value needs to be updated
-						$updatedContent .= $attributeName . ":" . '"'.$newValue.'"';
-						// while(1) {
-						// 	if(!isset($jsonContent[$index])) {
-						// 		$index -= 1;
-						// 		break;
-						// 	}
-						// 	if($jsonContent[$index]==",") {
-						// 		$index = $index - 1;
-						// 		break;
-						// 	} else {
-						// 		$index++;
-						// 	}
-						// }
+						$updatedContent .= $attributeName . "\":" . '"'.$newValue.'"';
 						$tempIndex = $index;
-						while($jsonContent[$tempIndex]!='"'&&$jsonContent[$tempIndex+1]!=',') {
+						while($jsonContent[$tempIndex]!=','&&$jsonContent[$tempIndex]!='}'&&$jsonContent[$tempIndex]!='') {
 							$tempIndex+=1;
 						}
-						$index = $tempIndex - 2;
+						$index = $tempIndex - 1;
 					} else {
 						$updatedContent .= $jsonContent[$index];
 					}
