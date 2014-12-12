@@ -40,7 +40,7 @@
 					$contentFilteredByQuery = $contentOfFile;
 				}
 				$contentOfFile = NULL;
-				//$contentFilteredByQuery = $this->updateContent($contentFilteredByQuery, $attributeName, $newValue);
+				$contentFilteredByQuery = $this->updateContent($contentFilteredByQuery, $attributeName, $newValue);
 				return $contentFilteredByQuery;
 			}
 		}
@@ -48,7 +48,6 @@
 			$jsonContent = json_encode($contentFilteredByQuery);
 			$contentFilteredByQuery = NULL;
 			$updatedContent = "";
-			$indexForUpdatedContent = 0;
 			for($index=0; $index<strlen($jsonContent); $index++) {
 				if($jsonContent[$index]==$attributeName[0]) {
 					$flag = 0;
@@ -59,16 +58,32 @@
 						}
 					}
 					if($flag == 0) {// attribute value needs to be updated
-
+						$updatedContent .= $attributeName . ":" . '"'.$newValue.'"';
+						// while(1) {
+						// 	if(!isset($jsonContent[$index])) {
+						// 		$index -= 1;
+						// 		break;
+						// 	}
+						// 	if($jsonContent[$index]==",") {
+						// 		$index = $index - 1;
+						// 		break;
+						// 	} else {
+						// 		$index++;
+						// 	}
+						// }
+						$tempIndex = $index;
+						while($jsonContent[$tempIndex]!='"'&&$jsonContent[$tempIndex+1]!=',') {
+							$tempIndex+=1;
+						}
+						$index = $tempIndex - 2;
 					} else {
-						$updatedContent[$indexForUpdatedContent] = $jsonContent[$index];
-						$indexForUpdatedContent += 1;	
+						$updatedContent .= $jsonContent[$index];
 					}
 				} else {
-					$updatedContent[$indexForUpdatedContent] = $jsonContent[$index];
-					$indexForUpdatedContent += 1;
+					$updatedContent .= $jsonContent[$index];
 				}
-			}
+				
+			}echo $updatedContent;die();
 			return json_decode($updatedContent, true);
 		}
 		private function searchFromDatabase($pageName, $attributeName, $query) {
@@ -124,7 +139,7 @@
 					} else {
 						$tempArray = explode($attributeName, $recordAsJson);
 						$chunk[$attributeName] = explode(',',explode(":", $tempArray[1])[1])[0];
-						$chunk[$attributeName] = trim($chunk[$attributeName],'\'');
+						$chunk[$attributeName] = trim($chunk[$attributeName],'}');
 						$chunk[$attributeName] = trim($chunk[$attributeName],'\"');
 					}
 				}
