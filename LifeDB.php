@@ -26,8 +26,30 @@
 		public function update($pageName, $attributeName, $newValue, $query="") {
 			return json_encode($this->updateToDatabase($pageName, $attributeName, $newValue, $query)); 
 		}
+		public function delete($pageName, $attributeName="*", $query="") {
+			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
+		}
 		// end of public functions accessible by users
-		
+		private function matchAndDeleteContent($mainContent, $subContent) {
+			$mainContentJson = json_encode($mainContent);
+			foreach($subContent as $content) {
+				$contentJson = json_encode($content);
+				$contentJsonTemp1 = $contentJson.",";
+				$contentJsonTemp2 = ",".$contentJson;
+				if(strpos($mainContentJson, $contentJsonTemp1)) {
+					$mainContentJson = str_replace($contentJsonTemp1, "", $mainContentJson);
+					$contentJsonTemp1 = NULL;
+				} else if(strpos($mainContentJson, $contentJsonTemp2)) {
+					$mainContentJson = str_replace($contentJsonTemp2, "", $mainContentJson);
+					$contentJsonTemp2 = NULL;
+				}
+				else {
+					$mainContentJson = str_replace($contentJson, "", $mainContentJson);
+				}
+			}
+			$mainContent = json_decode($mainContentJson, true);
+			return $mainContent;
+		}
 		private function updateToDatabase($pageName, $attributeName, $newValue, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			if(!isset($contentOfFile[$pageName])) {
@@ -39,9 +61,14 @@
 				} else {
 					$contentFilteredByQuery = $contentOfFile;
 				}
+				$resultSetWithoutMatchedContent = $this->matchAndDeleteContent($contentOfFile, $contentFilteredByQuery);// deleting the elements which will be updated and reinserted
 				$contentOfFile = NULL;
-				$contentFilteredByQuery = $this->updateContent($contentFilteredByQuery, $attributeName, $newValue);
-				return $contentFilteredByQuery;
+				$updatedResultSet = $this->updateContent($contentFilteredByQuery, $attributeName, $newValue);
+				foreach($updatedResultSet as $record) {// inserting the updated data to database
+					array_push($resultSetWithoutMatchedContent[$pageName], $record);				
+				}
+				$this->writeJsonStringToFile(json_encode($resultSetWithoutMatchedContent));// writing the uodate to database
+				return $updatedResultSet;
 			}
 		}
 		private function updateContent($contentFilteredByQuery, $attributeName, $newValue) {
@@ -71,7 +98,7 @@
 					$updatedContent .= $jsonContent[$index];
 				}
 				
-			}echo $updatedContent;die();
+			}
 			return json_decode($updatedContent, true);
 		}
 		private function searchFromDatabase($pageName, $attributeName, $query) {
