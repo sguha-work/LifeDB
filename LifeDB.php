@@ -30,7 +30,28 @@
 			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
 		}
 		// end of public functions accessible by users
-		private function matchAndDeleteContent($mainContent, $subContent) {
+
+		private function initiateDeleteProcess($pageName, $attributeName, $query) {
+			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
+			if(!isset($contentOfFile[$pageName])) {
+				return false;
+			} else {
+				$resultSet = array();
+				if(trim($attributeName) == "*") {// if no attribute is provided the entire record will be deleted
+					$contentFilteredByQuery;
+					if(trim($query)!="") {
+						$contentFilteredByQuery = $this->searchFromDatabase($pageName,"*", $query);
+					} else {
+						$contentFilteredByQuery = $contentOfFile[$pageName];
+					}
+					$resultSet = $this->matchAndDeleteContent($contentOfFile, $contentFilteredByQuery);// deleting the elements which will be updated and reinserted 
+				} else { // if attribute name is provided then only the attributes will be removed along with value
+
+				}
+			}
+		}
+
+		private function matchAndDeleteContent($mainContent, $subContent) { // destroy subcontent from main content
 			$mainContentJson = json_encode($mainContent);
 			foreach($subContent as $content) {
 				$contentJson = json_encode($content);
@@ -59,7 +80,7 @@
 				if(trim($query)!="") {
 					$contentFilteredByQuery = $this->searchFromDatabase($pageName,"*", $query);
 				} else {
-					$contentFilteredByQuery = $contentOfFile;
+					$contentFilteredByQuery = $contentOfFile[$pageName];
 				}
 				$resultSetWithoutMatchedContent = $this->matchAndDeleteContent($contentOfFile, $contentFilteredByQuery);// deleting the elements which will be updated and reinserted
 				$contentOfFile = NULL;
