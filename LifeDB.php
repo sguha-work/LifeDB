@@ -26,8 +26,51 @@
 		public function update($pageName, $attributeName, $newValue, $query="") {
 			return json_encode($this->updateToDatabase($pageName, $attributeName, $newValue, $query)); 
 		}
+		public function delete($pageName, $attributeName="*", $query="") {
+			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
+		}
 		// end of public functions accessible by users
-		
+
+		private function initiateDeleteProcess($pageName, $attributeName, $query) {
+			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
+			if(!isset($contentOfFile[$pageName])) {
+				return false;
+			} else {
+				$resultSet = array();
+				if(trim($attributeName) == "*") {// if no attribute is provided the entire record will be deleted
+					$contentFilteredByQuery;
+					if(trim($query)!="") {
+						$contentFilteredByQuery = $this->searchFromDatabase($pageName,"*", $query);
+					} else {
+						$contentFilteredByQuery = $contentOfFile[$pageName];
+					}
+					$resultSet = $this->matchAndDeleteContent($contentOfFile, $contentFilteredByQuery);// deleting the elements which will be updated and reinserted 
+				} else { // if attribute name is provided then only the attributes will be removed along with value
+
+				}
+			}
+		}
+
+		private function matchAndDeleteContent($mainContent, $subContent) { // destroy subcontent from main content
+			$mainContentJson = json_encode($mainContent);
+			foreach($subContent as $content) {
+				$contentJson = json_encode($content);
+				$contentJsonTemp1 = $contentJson.",";
+				$contentJsonTemp2 = ",".$contentJson;
+				if(strpos($mainContentJson, $contentJsonTemp1)) {
+					$mainContentJson = str_replace($contentJsonTemp1, "", $mainContentJson);
+					$contentJsonTemp1 = NULL;
+				} else if(strpos($mainContentJson, $contentJsonTemp2)) {
+					$mainContentJson = str_replace($contentJsonTemp2, "", $mainContentJson);
+					$contentJsonTemp2 = NULL;
+				}
+				else {
+					$mainContentJson = str_replace($contentJson, "", $mainContentJson);
+				}
+			}
+			$mainContent = json_decode($mainContentJson, true);
+			return $mainContent;
+		}
 		private function updateToDatabase($pageName, $attributeName, $newValue, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			if(!isset($contentOfFile[$pageName])) {
@@ -37,18 +80,22 @@
 				if(trim($query)!="") {
 					$contentFilteredByQuery = $this->searchFromDatabase($pageName,"*", $query);
 				} else {
-					$contentFilteredByQuery = $contentOfFile;
+					$contentFilteredByQuery = $contentOfFile[$pageName];
 				}
+				$resultSetWithoutMatchedContent = $this->matchAndDeleteContent($contentOfFile, $contentFilteredByQuery);// deleting the elements which will be updated and reinserted
 				$contentOfFile = NULL;
-				//$contentFilteredByQuery = $this->updateContent($contentFilteredByQuery, $attributeName, $newValue);
-				return $contentFilteredByQuery;
+				$updatedResultSet = $this->updateContent($contentFilteredByQuery, $attributeName, $newValue);
+				foreach($updatedResultSet as $record) {// inserting the updated data to database
+					array_push($resultSetWithoutMatchedContent[$pageName], $record);				
+				}
+				$this->writeJsonStringToFile(json_encode($resultSetWithoutMatchedContent));// writing the uodate to database
+				return $updatedResultSet;
 			}
 		}
 		private function updateContent($contentFilteredByQuery, $attributeName, $newValue) {
 			$jsonContent = json_encode($contentFilteredByQuery);
 			$contentFilteredByQuery = NULL;
 			$updatedContent = "";
-			$indexForUpdatedContent = 0;
 			for($index=0; $index<strlen($jsonContent); $index++) {
 				if($jsonContent[$index]==$attributeName[0]) {
 					$flag = 0;
@@ -59,15 +106,19 @@
 						}
 					}
 					if($flag == 0) {// attribute value needs to be updated
-
+						$updatedContent .= $attributeName . "\":" . '"'.$newValue.'"';
+						$tempIndex = $index;
+						while($jsonContent[$tempIndex]!=','&&$jsonContent[$tempIndex]!='}'&&$jsonContent[$tempIndex]!='') {
+							$tempIndex+=1;
+						}
+						$index = $tempIndex - 1;
 					} else {
-						$updatedContent[$indexForUpdatedContent] = $jsonContent[$index];
-						$indexForUpdatedContent += 1;	
+						$updatedContent .= $jsonContent[$index];
 					}
 				} else {
-					$updatedContent[$indexForUpdatedContent] = $jsonContent[$index];
-					$indexForUpdatedContent += 1;
+					$updatedContent .= $jsonContent[$index];
 				}
+				
 			}
 			return json_decode($updatedContent, true);
 		}
@@ -124,7 +175,7 @@
 					} else {
 						$tempArray = explode($attributeName, $recordAsJson);
 						$chunk[$attributeName] = explode(',',explode(":", $tempArray[1])[1])[0];
-						$chunk[$attributeName] = trim($chunk[$attributeName],'\'');
+						$chunk[$attributeName] = trim($chunk[$attributeName],'}');
 						$chunk[$attributeName] = trim($chunk[$attributeName],'\"');
 					}
 				}
@@ -407,8 +458,14 @@
 		}
 		// this function inser a record to the specified page of database
 		private function insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject) {
-			array_push($contentOfFile[$pageName], $recordAsJsonObject);
-			return $this->writeJsonStringToFile(json_encode($contentOfFile[$pageName]));
+			if(isset($recordAsJsonObject[0])) {
+				for($index=0; $index<count($recordAsJsonObject); $index++) {
+					array_push($contentOfFile[$pageName], $recordAsJsonObject[$index]);	
+				}	
+			} else {
+				array_push($contentOfFile[$pageName], $recordAsJsonObject);	
+			}
+			return $this->writeJsonStringToFile(json_encode($contentOfFile));
 		}
 		// check page exists in database or not
 		private function pageExists($contentOfFile, $pageName) {
