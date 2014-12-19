@@ -458,8 +458,14 @@
 		}
 		// this function inser a record to the specified page of database
 		private function insertIntoDatabase($contentOfFile, $pageName, $recordAsJsonObject) {
-			array_push($contentOfFile[$pageName], $recordAsJsonObject);
-			return $this->writeJsonStringToFile(json_encode($contentOfFile[$pageName]));
+			if(isset($recordAsJsonObject[0])) {
+				for($index=0; $index<count($recordAsJsonObject); $index++) {
+					array_push($contentOfFile[$pageName], $recordAsJsonObject[$index]);	
+				}	
+			} else {
+				array_push($contentOfFile[$pageName], $recordAsJsonObject);	
+			}
+			return $this->writeJsonStringToFile(json_encode($contentOfFile));
 		}
 		// check page exists in database or not
 		private function pageExists($contentOfFile, $pageName) {
