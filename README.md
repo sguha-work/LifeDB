@@ -10,22 +10,5 @@ Inintially I used PHP for development but also this easy algorythm can be implem
 
 I'm using a page based locking system for executing the database transaction like MyISAM database engine. Further documentation is coming soon
 
-
-basic test cases are here
-
-  $instance = new LifeDB("jsondb_1.json");
-  
-  $instance->insert("student","{\"name\":\"arindam\",\"title\":\"karmokar\"}");
-  
-  $instance->insert("student","{\"name\":\"piklu\"}");
-  
-  $instance->insert("teacher","{\"name\":\"shyamal\"}");
-  
-  $instance->insert("teacher","{\"name\":\"aritrik\"}");
-  
-  $instance->insert("student","[{\"name\":\"arindam1\"},{\"name\":\"piklu1\"}]");
-  
-  $instance->find("student", "[\"name\",\"title\",\"class\"]", "");
-  
-  $instance->find("student", "*", "");
+https://docs.google.com/document/d/1RH18mLek7HHy38vMEBjd84lzpjDx8OM05eafE8tsSYs/edit?usp=sharing
   
