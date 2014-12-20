@@ -450,6 +450,7 @@
 			if(!$recordAsJsonObject) { // if the record is not in valid json format returning false
 				return false;
 			}
+			$recordAsJsonObject = $this->addDefaultInfo($recordAsJsonObject);
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			if(!$this->pageExists($contentOfFile, $pageName)) {// if the pages doesnt exists create an empty aray for the page
 				$contentOfFile[$pageName] = array();
@@ -524,6 +525,21 @@
 				echo "cannot create a file. Permission denied";
 				return false;
 			}
+		}
+
+		private function addDefaultInfo($record) {
+			if(isset($record[0])) {
+				for($index=0; $index<count($record); $index++) {
+					$presentTimeStamp = time();
+					$record[$index]['_id'] = $presentTimeStamp;
+					$record[$index]['_addedOn'] = $presentTimeStamp; 
+				}
+			} else {
+				$presentTimeStamp = time();
+				$record['_id'] = $presentTimeStamp;
+				$record['_addedOn'] = $presentTimeStamp;
+			}
+			return $record;
 		}
 	}
 ?>
