@@ -1,4 +1,4 @@
-LifeDB
+                                                LifeDB
 
 Extreamly Lightweight NoSqlType JSON based lightning fast database with intelligent caching mechanism.
 
@@ -10,4 +10,5 @@ Initially I used PHP for development but also this easy algorythm can be impleme
 
 I'm using a page based locking system for executing the database transaction like MyISAM database engine. Further documentation is coming soon
 
- You may find something usefull in https://docs.google.com/a/fusioncharts.com/document/d/1RH18mLek7HHy38vMEBjd84lzpjDx8OM05eafE8tsSYs/edit
+You may find something usefull in https://docs.google.com/a/fusioncharts.com/document/d/1RH18mLek7HHy38vMEBjd84lzpjDx8OM05eafE8tsSYs/edit
+
