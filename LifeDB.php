@@ -89,37 +89,40 @@
 				foreach($updatedResultSet as $record) {// inserting the updated data to database
 					array_push($resultSetWithoutMatchedContent[$pageName], $record);				
 				}
-				$this->writeJsonStringToFile(json_encode($resultSetWithoutMatchedContent));// writing the uodate to database
-				return $updatedResultSet;
+				return $this->writeJsonStringToFile(json_encode($resultSetWithoutMatchedContent));// writing the uodate to database
 			}
 		}
 		private function updateContent($contentFilteredByQuery, $attributeName, $newValue) {
-			$jsonContent = json_encode($contentFilteredByQuery);
+			$attributeName = json_decode($attributeName, true);
+			$newValue      = json_decode($newValue, true);
+			$jsonContent   = json_encode($contentFilteredByQuery);
 			$contentFilteredByQuery = NULL;
 			$updatedContent = "";
-			for($index=0; $index<strlen($jsonContent); $index++) {
-				if($jsonContent[$index]==$attributeName[0]) {
-					$flag = 0;
-					for($tempIndex=0; $tempIndex<strlen($attributeName); $tempIndex++) {
-						if($jsonContent[$index+$tempIndex]!=$attributeName[$tempIndex]) {
-							$flag = 1;
-							break;
+			for($atValIndex = 0; $atValIndex<count($attributeName); $atValIndex++) {
+				for($index=0; $index<strlen($jsonContent); $index++) {
+					if($jsonContent[$index]==$attributeName[$atValIndex][0]) {
+						$flag = 0;
+						for($tempIndex=0; $tempIndex<strlen($attributeName[$atValIndex]); $tempIndex++) {
+							if($jsonContent[$index+$tempIndex]!=$attributeName[$atValIndex][$tempIndex]) {
+								$flag = 1;
+								break;
+							}
 						}
-					}
-					if($flag == 0) {// attribute value needs to be updated
-						$updatedContent .= $attributeName . "\":" . '"'.$newValue.'"';
-						$tempIndex = $index;
-						while($jsonContent[$tempIndex]!=','&&$jsonContent[$tempIndex]!='}'&&$jsonContent[$tempIndex]!='') {
-							$tempIndex+=1;
+						if($flag == 0) {// attribute value needs to be updated
+							$updatedContent .= $attributeName[$atValIndex] . "\":" . '"'.$newValue[$atValIndex].'"';
+							$tempIndex = $index;
+							while($jsonContent[$tempIndex]!=','&&$jsonContent[$tempIndex]!='}'&&$jsonContent[$tempIndex]!='') {
+								$tempIndex+=1;
+							}
+							$index = $tempIndex - 1;
+						} else {
+							$updatedContent .= $jsonContent[$index];
 						}
-						$index = $tempIndex - 1;
 					} else {
 						$updatedContent .= $jsonContent[$index];
 					}
-				} else {
-					$updatedContent .= $jsonContent[$index];
+					
 				}
-				
 			}
 			return json_decode($updatedContent, true);
 		}
