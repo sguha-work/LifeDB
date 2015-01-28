@@ -1,8 +1,7 @@
 <?php
 	class LifeDB {
-		// this variable will holds the database file name
-		private $dbFileName;
-		public function __construct($fileName="") {
+		private $dbFileName; // this variable will holds the database file name
+		public function __construct($fileName="") { // constructor, if file name not specified a random file will be created
 			if(trim($fileName) == "") {
 				$this->dbFileName = $this->getRandomFileName();
 				$this->initiateEmptyFile();	
