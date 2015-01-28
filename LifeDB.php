@@ -14,7 +14,7 @@
 			}
 		}
 		// public functions accessible by users
-		public function insert($pageName, $record) { // insert a record under specified page
+		public function insert($pageName, $record) { // insert a record under specified page return 1 or 0
 			return $this->initiateInsertProcess($pageName, $record);
 		}
 		public function destroy($willDeleteFileAlso = false) { // destroy the whole database
@@ -45,6 +45,7 @@
 						$contentFilteredByQuery = $contentOfFile[$pageName];
 					}
 					$resultSet = $this->matchAndDeleteContent($contentOfFile, $contentFilteredByQuery);// deleting the elements which will be updated and reinserted 
+					return $this->writeJsonStringToFile(json_encode($resultSet));
 				} else { // if attribute name is provided then only the attributes will be removed along with value
 
 				}
