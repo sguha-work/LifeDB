@@ -20,7 +20,7 @@
 			$this->destroyDatabase($willDeleteFileAlso);
 		}
 		public function find($pageName, $attributeName="*", $query="") { // search functionality
-			return json_encode($this->searchFromDatabase($pageName, $attributeName, $query));
+			return $this->searchFromDatabase($pageName, $attributeName, $query);
 		}
 		public function update($pageName, $attributeName, $newValue, $query="") {
 			return json_encode($this->updateToDatabase($pageName, $attributeName, $newValue, $query)); 
@@ -29,7 +29,6 @@
 			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
 		}
 		// end of public functions accessible by users
-
 		private function initiateDeleteProcess($pageName, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			if(!isset($contentOfFile[$pageName])) {
@@ -46,11 +45,9 @@
 					$resultSet = $this->matchAndDeleteContent($contentOfFile, $contentFilteredByQuery);// deleting the elements which will be updated and reinserted 
 					return $this->writeJsonStringToFile(json_encode($resultSet));
 				} else { // if attribute name is provided then only the attributes will be removed along with value
-
 				}
 			}
 		}
-
 		private function matchAndDeleteContent($mainContent, $subContent) { // destroy subcontent from main content
 			$mainContentJson = json_encode($mainContent);
 			foreach($subContent as $content) {
@@ -177,9 +174,10 @@
 						$chunk[$attributeName] = NULL;
 					} else {
 						$tempArray = explode($attributeName, $recordAsJson);
-						$chunk[$attributeName] = explode(',',explode(":", $tempArray[1])[1])[0];
+						$chunk[$attributeName] = explode(',',explode('":', $tempArray[1])[1])[0];
 						$chunk[$attributeName] = trim($chunk[$attributeName],'}');
 						$chunk[$attributeName] = trim($chunk[$attributeName],'\"');
+						$chunk[$attributeName] = stripslashes($chunk[$attributeName]);
 					}
 				}
 				array_push($resultArray, $chunk);
@@ -529,7 +527,6 @@
 				return false;
 			}
 		}
-
 		private function addDefaultInfo($record) {
 			if(isset($record[0])) {
 				for($index=0; $index<count($record); $index++) {
