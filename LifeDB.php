@@ -23,7 +23,7 @@
 			return $this->searchFromDatabase($pageName, $attributeName, $query);
 		}
 		public function update($pageName, $attributeName, $newValue, $query="") {
-			return json_encode($this->updateToDatabase($pageName, $attributeName, $newValue, $query)); 
+			return $this->updateToDatabase($pageName, $attributeName, $newValue, $query); 
 		}
 		public function delete($pageName, $attributeName="*", $query="") {
 			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
