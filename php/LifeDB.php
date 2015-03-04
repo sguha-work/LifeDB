@@ -20,7 +20,7 @@
 			$this->destroyDatabase($willDeleteFileAlso);
 		}
 		public function find($pageName, $attributeName="*", $query="") { // search functionality
-			return $this->searchFromDatabase($pageName, $attributeName, $query);
+			return json_encode($this->searchFromDatabase($pageName, $attributeName, $query));
 		}
 		public function update($pageName, $attributeName, $newValue, $query="") {
 			return $this->updateToDatabase($pageName, $attributeName, $newValue, $query); 
