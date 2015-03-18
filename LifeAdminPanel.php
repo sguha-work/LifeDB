@@ -23,9 +23,25 @@
 		</tr>
 	</table>
 		<script type="text/javascript">
+		var initiateCreateDatabase = (function(databaseName) {
+			alert("x");
+		});
+		</script>
+		<script type="text/javascript">
 		$(document).ready(function() {
 			$("#form_createDatabase button").on('click', function() {
-				alert("x");
+				var databaseName = $.trim($("#form_createDatabase input[type='text']").val());
+				if(databaseName != "" && databaseName[0] != "!" && databaseName[0] != "@" && databaseName[0] != "#" && databaseName[0] != "$" && databaseName[0] != "%" && databaseName[0] != "^" && databaseName[0] != "&" && databaseName[0] != "*" && databaseName[0] != "(" && databaseName[0] != ")" && databaseName[0] != "-" && databaseName[0] != "+" && databaseName[0] != "," && databaseName[0] != "/" && databaseName[0] != "'" && databaseName[0] != '"' && databaseName[0] != ";" ) {
+					$("#form_createDatabase input[type='text']").css({
+						"border" : "1px solid green"
+					});
+					initiateCreateDatabase(databaseName); 
+				} else {
+					$("#form_createDatabase input[type='text']").css({
+						"border" : "1px solid red"
+					});	
+					alert("Not a valid database name");
+				}
 				return false;
 			});
 		});
