@@ -1,5 +1,7 @@
 <?php
+	$LifeDBTempMemoryDump = array();
 	class LifeDB {
+		private $cache;
 		private $dbFileName; // this variable will holds the database file name
 		public function __construct($fileName="") { // constructor, if file name not specified a random file will be created
 			if(trim($fileName) == "") {
@@ -20,7 +22,14 @@
 			$this->destroyDatabase($willDeleteFileAlso);
 		}
 		public function find($pageName, $attributeName="*", $query="") { // search functionality
-			return json_encode($this->searchFromDatabase($pageName, $attributeName, $query));
+			$cacheKey = $this->prepareCacheKey($pageName.$attributeName.$query);
+			if($this->keyExistsInCache($cacheKey)) {
+				return $this->fetchFromCache($cacheKey);
+			} else {
+				$data = json_encode($this->searchFromDatabase($pageName, $attributeName, $query)); 
+				$this->writeToCache($cacheKey, $data);
+				return $data;
+			}
 		}
 		public function update($pageName, $attributeName, $newValue, $query="") {
 			return $this->updateToDatabase($pageName, $attributeName, $newValue, $query); 
@@ -540,6 +549,63 @@
 				$record['_addedOn'] = $presentTimeStamp;
 			}
 			return $record;
+		}
+		private function keyExistsInCache($key) {
+			$presentTimeStamp = time();
+			$LifeDBTempMemoryDump = json_decode($this->cache, true);
+			if(!isset($LifeDBTempMemoryDump[$key])) {
+				return false;
+			}
+			$cachedDataTotal = $LifeDBTempMemoryDump[$key];
+			$cacheTime = $cachedDataTotal['CACHE_CREATE_TIME'];
+			if(($presentTimeStamp - $cacheTime)>20000) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+		private function fetchFromCache($key) {
+			$LifeDBTempMemoryDump = json_decode($this->cache, true);
+			return $LifeDBTempMemoryDump[$key]['DATA'];
+		}
+		private function writeToCache($cacheKey, $data) {
+			$dataSet = array();
+			$dataSet['CACHE_CREATE_TIME'] = time();
+			$dataSet['DATA'] = $data;
+			$LifeDBTempMemoryDump = json_decode($this->cache, true);
+			$LifeDBTempMemoryDump[$cacheKey] = $dataSet;
+			$this->cache = json_encode($LifeDBTempMemoryDump);
+			$this->cleanupCache();
+		}
+		private function cleanupCache() {
+			$presentTimeStamp = time();
+			$cachedDataTotal = json_decode($this->cache, true);
+			foreach(array_keys($cachedDataTotal) as $key) {
+				if(($presentTimeStamp-$cachedDataTotal[$key]['CACHE_CREATE_TIME'])>100000) {
+					unset($cachedDataTotal[$key]);
+				}
+			}
+			$this->cache = json_encode($cachedDataTotal);
+		}
+		private function prepareCacheKey($tempKey) {
+			$newKey = str_replace('"','_',$tempKey);
+			$newKey = str_replace('{','_',$newKey);
+			$newKey = str_replace('}','_',$newKey);
+			$newKey = str_replace('[','_',$newKey);
+			$newKey = str_replace(']','_',$newKey);
+			$newKey = str_replace('@','_',$newKey);
+			$newKey = str_replace(' ','_',$newKey);
+			$newKey = str_replace(',','_',$newKey);
+			$newKey = str_replace(';','_',$newKey);
+			$newKey = str_replace('!','_',$newKey);
+			$newKey = str_replace('#','_',$newKey);
+			$newKey = str_replace('$','_',$newKey);
+			$newKey = str_replace('^','_',$newKey);
+			$newKey = str_replace('&','_',$newKey);
+			$newKey = str_replace('*','_',$newKey);
+			$newKey = str_replace('(','_',$newKey);
+			$newKey = str_replace(')','_',$newKey);
+			return $newKey;
 		}
 	}
 ?>
