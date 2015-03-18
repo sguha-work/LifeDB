@@ -1,7 +1,7 @@
 <?php
 	$LifeDBTempMemoryDump = array();
-	$_SESSION['LifeDB'] = "";
 	class LifeDB {
+		private $cache;
 		private $dbFileName; // this variable will holds the database file name
 		public function __construct($fileName="") { // constructor, if file name not specified a random file will be created
 			if(trim($fileName) == "") {
@@ -550,10 +550,9 @@
 			}
 			return $record;
 		}
-
 		private function keyExistsInCache($key) {
 			$presentTimeStamp = time();
-			$LifeDBTempMemoryDump = json_decode($_SESSION['LifeDB'], true);
+			$LifeDBTempMemoryDump = json_decode($this->cache, true);
 			if(!isset($LifeDBTempMemoryDump[$key])) {
 				return false;
 			}
@@ -565,33 +564,29 @@
 				return true;
 			}
 		}
-
 		private function fetchFromCache($key) {
-			$LifeDBTempMemoryDump = json_decode($_SESSION['LifeDB'], true);
+			$LifeDBTempMemoryDump = json_decode($this->cache, true);
 			return $LifeDBTempMemoryDump[$key]['DATA'];
 		}
-
 		private function writeToCache($cacheKey, $data) {
 			$dataSet = array();
 			$dataSet['CACHE_CREATE_TIME'] = time();
 			$dataSet['DATA'] = $data;
-			$LifeDBTempMemoryDump = json_decode($_SESSION['LifeDB'], true);
+			$LifeDBTempMemoryDump = json_decode($this->cache, true);
 			$LifeDBTempMemoryDump[$cacheKey] = $dataSet;
-			$_SESSION['LifeDB'] = json_encode($LifeDBTempMemoryDump);
+			$this->cache = json_encode($LifeDBTempMemoryDump);
 			$this->cleanupCache();
 		}
-
 		private function cleanupCache() {
 			$presentTimeStamp = time();
-			$cachedDataTotal = json_decode($_SESSION['LifeDB'], true);
+			$cachedDataTotal = json_decode($this->cache, true);
 			foreach(array_keys($cachedDataTotal) as $key) {
 				if(($presentTimeStamp-$cachedDataTotal[$key]['CACHE_CREATE_TIME'])>100000) {
 					unset($cachedDataTotal[$key]);
 				}
 			}
-			$_SESSION['LifeDB'] = json_encode($cachedDataTotal);
+			$this->cache = json_encode($cachedDataTotal);
 		}
-
 		private function prepareCacheKey($tempKey) {
 			$newKey = str_replace('"','_',$tempKey);
 			$newKey = str_replace('{','_',$newKey);
@@ -613,5 +608,4 @@
 			return $newKey;
 		}
 	}
-
 ?>
