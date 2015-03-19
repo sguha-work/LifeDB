@@ -20,7 +20,7 @@
     //   echo $fiddle["fiddle_new_link"]."</br>";
     // }
 
-    //echo $instance->find('FiddlesData', '[\"fiddle_new_link\", \"fiddle_id\"]', "fiddle_id @eq :1");
-    echo $instance->find("ChildCategoryData", "[\"cat_id\"]","cat_name @eq :Chart");
-  //echo $instance->find("FiddlesData", "[\"fiddle_id\",\"fiddle_new_link\"]", "fiddle_id @eq :1");
+    echo $instance->delete('FiddlesData', '*', "fiddle_id @eq :1");
+    //echo $instance->find("ChildCategoryData", "[\"cat_id\"]","cat_name @eq :Chart");
+  echo $instance->find("FiddlesData", "[\"fiddle_id\"]");
 ?>
