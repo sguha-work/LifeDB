@@ -379,9 +379,9 @@
 		private function checkEqual($record, $separatedQuery) {
 			$attributeName = $separatedQuery['attribute'];
 			$value = $separatedQuery['value'];
-			// if(!is_nan($value)) {
-			// 	$value = '"'.$value.'"';
-			// }
+			if(!is_numeric($value)) {
+				$value = json_encode($value);
+			}
 			$separatedQuery = NULL;
 			$recordJSON = json_encode($record);
 			$record = NULL;
@@ -389,6 +389,7 @@
 			//$string2OfAttributeAndValue = '"'.$attributeName.'":"'.$value.'"';// requirred if value is a number
 			//echo $stringOfAttributeAndValue." ".$string2OfAttributeAndValue;die();
 			//echo $stringOfAttributeAndValue;die();
+			
 			if(strpos($recordJSON, $stringOfAttributeAndValue) == false) {
 				return false;
 			} else {
