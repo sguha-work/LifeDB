@@ -379,55 +379,63 @@
 		private function checkEqual($record, $separatedQuery) {
 			$attributeName = $separatedQuery['attribute'];
 			$value = $separatedQuery['value'];
+			// if(!is_nan($value)) {
+			// 	$value = '"'.$value.'"';
+			// }
 			$separatedQuery = NULL;
 			$recordJSON = json_encode($record);
 			$record = NULL;
 			$stringOfAttributeAndValue = '"'.$attributeName.'":'.$value;// required if value is a string
-			$string2OfAttributeAndValue = '"'.$attributeName.'":"'.$value.'"';// requirred if value is a number
+			//$string2OfAttributeAndValue = '"'.$attributeName.'":"'.$value.'"';// requirred if value is a number
+			//echo $stringOfAttributeAndValue." ".$string2OfAttributeAndValue;die();
+			//echo $stringOfAttributeAndValue;die();
 			if(strpos($recordJSON, $stringOfAttributeAndValue) == false) {
-				if(strpos($recordJSON, $string2OfAttributeAndValue) == false) {
-					return false;
-				} else {
-					return true;
-				}
+				return false;
 			} else {
 				return true;
 			}
 		}
 		private function separateQueryToAttributeNameOperatorValue($singleQuery) {// pick up attribute name, value and operator from the query
 			$separatedArray = array();
-			if(strpos($singleQuery, "@eq") != false) { // @eq equal opearator
+			$firstSectionOfQuery = explode(":", $singleQuery)[0];
+			if(strpos($firstSectionOfQuery, " @eq" ) != false) { // @eq equal opearator
 				$separatedArray['operator'] = "@eq";
-				$splitedQuery = explode("@eq", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@lt") != false) { // @lt less than opearator
+			} else if(strpos($firstSectionOfQuery, " @lt ") != false) { // @lt less than opearator
 				$separatedArray['operator'] = "@lt";
-				$splitedQuery = explode("@lt", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@gt") != false) { // @gt greater than operator
-				$separatedArray['operator'] = "@gt";
-				$splitedQuery = explode("@gt", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@le") != false) { // @le lessthan equal operator
+			} else if(strpos($firstSectionOfQuery, " @gt ") != false) { // @gt greater than operator
+				$separatedArray['operator'] = " @gt ";
+			} else if(strpos($firstSectionOfQuery, " @le ") != false) { // @le lessthan equal operator
 				$separatedArray['operator'] = "@le";
-				$splitedQuery = explode("@le", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@ge") != false) { // @ge greater than equal operator
+			} else if(strpos($firstSectionOfQuery, " @ge ") != false) { // @ge greater than equal operator
 				$separatedArray['operator'] = "@ge";
-				$splitedQuery = explode("@ge", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@ne") != false) { // @ne not equal operator
+			} else if(strpos($firstSectionOfQuery, " @ne ") != false) { // @ne not equal operator
 				$separatedArray['operator'] = "@ne";
-				$splitedQuery = explode("@ne", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
 			}
+			$separatedArray['attribute'] = $this->getAttributeNameFromQuery($singleQuery);
+			$separatedArray['value'] = $this->getValueFromQuery($singleQuery);  
 			return $separatedArray;
+		}
+		private function getAttributeNameFromQuery($singleQuery) {
+			$attributeName = "";
+			for($counter=0; $counter<strlen($singleQuery); $counter++) {
+				if($singleQuery[$counter] != " ") {
+					$attributeName .= $singleQuery[$counter];
+				} else {
+					break;
+				}
+			}
+			return $attributeName;
+		}
+		private function getValueFromQuery($singleQuery) {
+			$value = "";
+			$counter = 0;
+			while($singleQuery[$counter] != ":") {
+				$counter++;
+			}
+			for($counter2=$counter+1; $counter2<strlen($singleQuery); $counter2++) {
+				$value .= $singleQuery[$counter2];
+			}
+			return $value;
 		}
 		private function splitQueryBasedOnORoperation($query) {// split query based on OR operation
 			$resultArray = array();
