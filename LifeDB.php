@@ -385,11 +385,20 @@
 			$separatedQuery = NULL;
 			$recordJSON = json_encode($record);
 			$record = NULL;
-			$stringOfAttributeAndValue = '"'.$attributeName.'":'.$value;// required if value is a string
-			//$string2OfAttributeAndValue = '"'.$attributeName.'":"'.$value.'"';// requirred if value is a number
-			//echo $stringOfAttributeAndValue." ".$string2OfAttributeAndValue;die();
-			//echo $stringOfAttributeAndValue;die();
-			
+			$stringOfAttributeAndValue = '"'.$attributeName.'":'.$value;
+			if(is_numeric($value)) {
+				$stringOfAttributeAndValue2 = $stringOfAttributeAndValue . ",";
+				$stringOfAttributeAndValue3 = $stringOfAttributeAndValue . "}";
+				if(strpos($recordJSON, $stringOfAttributeAndValue2) == false) {
+					if(strpos($recordJSON, $stringOfAttributeAndValue3) == false) {
+						return false;
+					} else {
+						return true;
+					}
+				} else {
+					return true;
+				}
+			}
 			if(strpos($recordJSON, $stringOfAttributeAndValue) == false) {
 				return false;
 			} else {
