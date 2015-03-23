@@ -1,7 +1,7 @@
 <?php
 	$LifeDBTempMemoryDump = array();
-	$_SESSION['LifeDB'] = "";
 	class LifeDB {
+		private $cache;
 		private $dbFileName; // this variable will holds the database file name
 		public function __construct($fileName="") { // constructor, if file name not specified a random file will be created
 			if(trim($fileName) == "") {
@@ -37,7 +37,26 @@
 		public function delete($pageName, $attributeName="*", $query="") {
 			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
 		}
+		public function getPages($lowerLimit = 0, $upperLimit = 0) {
+			return json_encode($this->fetchListOfPages($lowerLimit, $upperLimit));
+		}
 		// end of public functions accessible by users
+		private function fetchListOfPages($lowerLimit, $upperLimit) {
+			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
+			$pages= array();
+			$index = -1;
+			foreach($contentOfFile as $key=>$value) {
+				$index++;
+				if($lowerLimit!=0 && $index<$lowerLimit) {
+					continue;
+				}
+				if($upperLimit!=0 && $index>$upperLimit) {
+					break;
+				}
+				array_push($pages, $key);	
+			}
+			return $pages;			
+		}
 		private function initiateDeleteProcess($pageName, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			if(!isset($contentOfFile[$pageName])) {
@@ -379,55 +398,73 @@
 		private function checkEqual($record, $separatedQuery) {
 			$attributeName = $separatedQuery['attribute'];
 			$value = $separatedQuery['value'];
+			if(!is_numeric($value)) {
+				$value = json_encode($value);
+			}
 			$separatedQuery = NULL;
 			$recordJSON = json_encode($record);
 			$record = NULL;
-			$stringOfAttributeAndValue = '"'.$attributeName.'":'.$value;// required if value is a string
-			$string2OfAttributeAndValue = '"'.$attributeName.'":"'.$value.'"';// requirred if value is a number
-			if(strpos($recordJSON, $stringOfAttributeAndValue) == false) {
-				if(strpos($recordJSON, $string2OfAttributeAndValue) == false) {
-					return false;
+			$stringOfAttributeAndValue = '"'.$attributeName.'":'.$value;
+			if(is_numeric($value)) {
+				$stringOfAttributeAndValue2 = $stringOfAttributeAndValue . ",";
+				$stringOfAttributeAndValue3 = $stringOfAttributeAndValue . "}";
+				if(strpos($recordJSON, $stringOfAttributeAndValue2) == false) {
+					if(strpos($recordJSON, $stringOfAttributeAndValue3) == false) {
+						return false;
+					} else {
+						return true;
+					}
 				} else {
 					return true;
 				}
+			}
+			if(strpos($recordJSON, $stringOfAttributeAndValue) == false) {
+				return false;
 			} else {
 				return true;
 			}
 		}
 		private function separateQueryToAttributeNameOperatorValue($singleQuery) {// pick up attribute name, value and operator from the query
 			$separatedArray = array();
-			if(strpos($singleQuery, "@eq") != false) { // @eq equal opearator
+			$firstSectionOfQuery = explode(":", $singleQuery)[0];
+			if(strpos($firstSectionOfQuery, " @eq" ) != false) { // @eq equal opearator
 				$separatedArray['operator'] = "@eq";
-				$splitedQuery = explode("@eq", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@lt") != false) { // @lt less than opearator
+			} else if(strpos($firstSectionOfQuery, " @lt ") != false) { // @lt less than opearator
 				$separatedArray['operator'] = "@lt";
-				$splitedQuery = explode("@lt", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@gt") != false) { // @gt greater than operator
-				$separatedArray['operator'] = "@gt";
-				$splitedQuery = explode("@gt", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@le") != false) { // @le lessthan equal operator
+			} else if(strpos($firstSectionOfQuery, " @gt ") != false) { // @gt greater than operator
+				$separatedArray['operator'] = " @gt ";
+			} else if(strpos($firstSectionOfQuery, " @le ") != false) { // @le lessthan equal operator
 				$separatedArray['operator'] = "@le";
-				$splitedQuery = explode("@le", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@ge") != false) { // @ge greater than equal operator
+			} else if(strpos($firstSectionOfQuery, " @ge ") != false) { // @ge greater than equal operator
 				$separatedArray['operator'] = "@ge";
-				$splitedQuery = explode("@ge", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
-			} else if(strpos($singleQuery, "@ne") != false) { // @ne not equal operator
+			} else if(strpos($firstSectionOfQuery, " @ne ") != false) { // @ne not equal operator
 				$separatedArray['operator'] = "@ne";
-				$splitedQuery = explode("@ne", $singleQuery);
-				$separatedArray['attribute'] = trim($splitedQuery[0]);
-				$separatedArray['value'] = trim($splitedQuery[1]);  
 			}
+			$separatedArray['attribute'] = $this->getAttributeNameFromQuery($singleQuery);
+			$separatedArray['value'] = $this->getValueFromQuery($singleQuery);  
 			return $separatedArray;
+		}
+		private function getAttributeNameFromQuery($singleQuery) {
+			$attributeName = "";
+			for($counter=0; $counter<strlen($singleQuery); $counter++) {
+				if($singleQuery[$counter] != " ") {
+					$attributeName .= $singleQuery[$counter];
+				} else {
+					break;
+				}
+			}
+			return $attributeName;
+		}
+		private function getValueFromQuery($singleQuery) {
+			$value = "";
+			$counter = 0;
+			while($singleQuery[$counter] != ":") {
+				$counter++;
+			}
+			for($counter2=$counter+1; $counter2<strlen($singleQuery); $counter2++) {
+				$value .= $singleQuery[$counter2];
+			}
+			return $value;
 		}
 		private function splitQueryBasedOnORoperation($query) {// split query based on OR operation
 			$resultArray = array();
@@ -550,10 +587,9 @@
 			}
 			return $record;
 		}
-
 		private function keyExistsInCache($key) {
 			$presentTimeStamp = time();
-			$LifeDBTempMemoryDump = json_decode($_SESSION['LifeDB'], true);
+			$LifeDBTempMemoryDump = json_decode($this->cache, true);
 			if(!isset($LifeDBTempMemoryDump[$key])) {
 				return false;
 			}
@@ -565,33 +601,29 @@
 				return true;
 			}
 		}
-
 		private function fetchFromCache($key) {
-			$LifeDBTempMemoryDump = json_decode($_SESSION['LifeDB'], true);
+			$LifeDBTempMemoryDump = json_decode($this->cache, true);
 			return $LifeDBTempMemoryDump[$key]['DATA'];
 		}
-
 		private function writeToCache($cacheKey, $data) {
 			$dataSet = array();
 			$dataSet['CACHE_CREATE_TIME'] = time();
 			$dataSet['DATA'] = $data;
-			$LifeDBTempMemoryDump = json_decode($_SESSION['LifeDB'], true);
+			$LifeDBTempMemoryDump = json_decode($this->cache, true);
 			$LifeDBTempMemoryDump[$cacheKey] = $dataSet;
-			$_SESSION['LifeDB'] = json_encode($LifeDBTempMemoryDump);
+			$this->cache = json_encode($LifeDBTempMemoryDump);
 			$this->cleanupCache();
 		}
-
 		private function cleanupCache() {
 			$presentTimeStamp = time();
-			$cachedDataTotal = json_decode($_SESSION['LifeDB'], true);
+			$cachedDataTotal = json_decode($this->cache, true);
 			foreach(array_keys($cachedDataTotal) as $key) {
 				if(($presentTimeStamp-$cachedDataTotal[$key]['CACHE_CREATE_TIME'])>100000) {
 					unset($cachedDataTotal[$key]);
 				}
 			}
-			$_SESSION['LifeDB'] = json_encode($cachedDataTotal);
+			$this->cache = json_encode($cachedDataTotal);
 		}
-
 		private function prepareCacheKey($tempKey) {
 			$newKey = str_replace('"','_',$tempKey);
 			$newKey = str_replace('{','_',$newKey);
@@ -613,5 +645,4 @@
 			return $newKey;
 		}
 	}
-
 ?>
