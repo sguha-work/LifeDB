@@ -37,7 +37,13 @@
 		public function delete($pageName, $attributeName="*", $query="") {
 			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
 		}
+		public function getPages($lowerLimit = 0, $upperLimit = 0) {
+			return $this->fetchListOfPages($lowerLimit, $upperLimit);
+		}
 		// end of public functions accessible by users
+		private function fetchListOfPages($lowerLimit, $upperLimit) {
+			
+		}
 		private function initiateDeleteProcess($pageName, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			if(!isset($contentOfFile[$pageName])) {

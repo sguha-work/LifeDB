@@ -1,3 +1,29 @@
+<?php
+function createDatabase($databaseName) {
+	$returnObject = array();
+	if(file_exists($databaseName.".js")) {
+		$returnObject['type'] = "ERROR";
+		$returnObject['errorType'] = "FILE_EXISTS";
+		$returnObject['message']   = "The database ".$databaseName." already exists";
+	} else {
+		include_once 'LifeDB.php';
+		$instance = new LifeDB($databaseName.".js");			
+		$returnObject['type']      = "SUCCESS";
+		$returnObject['errorType'] = "";
+		$returnObject['message']   = "Created database ".$databaseName;
+	}
+	return json_encode($returnObject);
+}
+
+if(isset($_POST['action'])) {
+	$action = $_POST['action'];
+	switch($action) {
+		case 'CREATE_DB':
+			echo createDatabase($_POST['databaseName']); die();
+		break;
+	}
+}
+?>
 <html>
 	<head>
 		<title> LifeDB admin panel </title>
@@ -24,7 +50,17 @@
 	</table>
 		<script type="text/javascript">
 		var initiateCreateDatabase = (function(databaseName) {
-			alert("x");
+			$.ajax({
+				url : "LifeAdminPanel.php",
+				data : {
+					action : "CREATE_DB",
+					databaseName : databaseName
+				},
+				method : "POST",
+				success : function(data) {
+					alert(data);			
+				}
+			});
 		});
 		</script>
 		<script type="text/javascript">
