@@ -38,11 +38,24 @@
 			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
 		}
 		public function getPages($lowerLimit = 0, $upperLimit = 0) {
-			return $this->fetchListOfPages($lowerLimit, $upperLimit);
+			return json_encode($this->fetchListOfPages($lowerLimit, $upperLimit));
 		}
 		// end of public functions accessible by users
 		private function fetchListOfPages($lowerLimit, $upperLimit) {
-			
+			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
+			$pages= array();
+			$index = -1;
+			foreach($contentOfFile as $key=>$value) {
+				$index++;
+				if($lowerLimit!=0 && $index<$lowerLimit) {
+					continue;
+				}
+				if($upperLimit!=0 && $index>$upperLimit) {
+					break;
+				}
+				array_push($pages, $key);	
+			}
+			return $pages;			
 		}
 		private function initiateDeleteProcess($pageName, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
