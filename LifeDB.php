@@ -21,15 +21,23 @@
 		public function destroy($willDeleteFileAlso = false) { // destroy the whole database
 			$this->destroyDatabase($willDeleteFileAlso);
 		}
-		public function find($pageName, $attributeName="*", $query="") { // search functionality
+		public function find($pageName, $attributeName="*", $query="", $lowerLimit=0, $upperLimit=0) { // search functionality
 			$cacheKey = $this->prepareCacheKey($pageName.$attributeName.$query);
+			$data;
 			if($this->keyExistsInCache($cacheKey)) {
-				return $this->fetchFromCache($cacheKey);
+				$data = $this->fetchFromCache($cacheKey);
 			} else {
 				$data = json_encode($this->searchFromDatabase($pageName, $attributeName, $query)); 
 				$this->writeToCache($cacheKey, $data);
-				return $data;
 			}
+			($lowerLimit<0)?(($lowerLimit*(-1))):($lowerLimit*1);
+			($upperLimit<0)?(($upperLimit*(-1))):($upperLimit*1);
+			if($upperLimit < $lowerLimit) { // if upperLimit is less than lowerLimit then the value will be swaped
+				$temp = $upperLimit;
+				$upperLimit = $lowerLimit;
+				$lowerLimit = $temp;
+			}
+			return $data;
 		}
 		public function update($pageName, $attributeName, $newValue, $query="") {
 			return $this->updateToDatabase($pageName, $attributeName, $newValue, $query); 
@@ -37,7 +45,7 @@
 		public function delete($pageName, $attributeName="*", $query="") {
 			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
 		}
-		public function getPages($lowerLimit = 0, $upperLimit = 0) {
+		public function getPages($lowerLimit = -1, $upperLimit = -1) {
 			return json_encode($this->fetchListOfPages($lowerLimit, $upperLimit));
 		}
 		// end of public functions accessible by users
@@ -45,12 +53,21 @@
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			$pages= array();
 			$index = -1;
+			if($lowerLimit!=-1&&$upperLimit!=-1) {
+				($lowerLimit<0)?(($lowerLimit*(-1))):($lowerLimit*1);
+				($upperLimit<0)?(($upperLimit*(-1))):($upperLimit*1);
+				if($upperLimit < $lowerLimit) { // if upperLimit is less than lowerLimit then the value will be swaped
+					$temp = $upperLimit;
+					$upperLimit = $lowerLimit;
+					$lowerLimit = $temp;
+				}
+			}
 			foreach($contentOfFile as $key=>$value) {
 				$index++;
-				if($lowerLimit!=0 && $index<$lowerLimit) {
+				if($lowerLimit!=-1&&$index<$lowerLimit) {
 					continue;
 				}
-				if($upperLimit!=0 && $index>$upperLimit) {
+				if($upperLimit!=-1&&$index>$upperLimit) {
 					break;
 				}
 				array_push($pages, $key);	
