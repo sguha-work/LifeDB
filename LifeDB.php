@@ -25,9 +25,9 @@
 			$cacheKey = $this->prepareCacheKey($pageName.$attributeName.$query);
 			$data;
 			if($this->keyExistsInCache($cacheKey)) {
-				$data = $this->fetchFromCache($cacheKey);
+				$data = json_decode($this->fetchFromCache($cacheKey), true);
 			} else {
-				$data = json_encode($this->searchFromDatabase($pageName, $attributeName, $query)); 
+				$data = $this->searchFromDatabase($pageName, $attributeName, $query); 
 				$this->writeToCache($cacheKey, $data);
 			}
 			($lowerLimit<0)?(($lowerLimit*(-1))):($lowerLimit*1);
@@ -37,7 +37,7 @@
 				$upperLimit = $lowerLimit;
 				$lowerLimit = $temp;
 			}
-			return $data;
+			return json_encode($data);
 		}
 		public function update($pageName, $attributeName, $newValue, $query="") {
 			return $this->updateToDatabase($pageName, $attributeName, $newValue, $query); 
@@ -625,7 +625,7 @@
 		private function writeToCache($cacheKey, $data) {
 			$dataSet = array();
 			$dataSet['CACHE_CREATE_TIME'] = time();
-			$dataSet['DATA'] = $data;
+			$dataSet['DATA'] = json_encode($data);
 			$LifeDBTempMemoryDump = json_decode($this->cache, true);
 			$LifeDBTempMemoryDump[$cacheKey] = $dataSet;
 			$this->cache = json_encode($LifeDBTempMemoryDump);
