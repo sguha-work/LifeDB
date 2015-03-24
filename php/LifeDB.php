@@ -21,15 +21,26 @@
 		public function destroy($willDeleteFileAlso = false) { // destroy the whole database
 			$this->destroyDatabase($willDeleteFileAlso);
 		}
-		public function find($pageName, $attributeName="*", $query="") { // search functionality
+		public function find($pageName, $attributeName="*", $query="", $lowerLimit=-1, $upperLimit=-1) { // search functionality
 			$cacheKey = $this->prepareCacheKey($pageName.$attributeName.$query);
+			$data;
 			if($this->keyExistsInCache($cacheKey)) {
-				return $this->fetchFromCache($cacheKey);
+				$data = json_decode($this->fetchFromCache($cacheKey), true);
 			} else {
-				$data = json_encode($this->searchFromDatabase($pageName, $attributeName, $query)); 
+				$data = $this->searchFromDatabase($pageName, $attributeName, $query); 
 				$this->writeToCache($cacheKey, $data);
-				return $data;
 			}
+			if($lowerLimit!=-1&&$upperLimit!=-1) {
+				($lowerLimit<0)?(($lowerLimit*(-1))):($lowerLimit*1);
+				($upperLimit<0)?(($upperLimit*(-1))):($upperLimit*1);
+				if($upperLimit < $lowerLimit) { // if upperLimit is less than lowerLimit then the value will be swaped
+					$temp = $upperLimit;
+					$upperLimit = $lowerLimit;
+					$lowerLimit = $temp;
+				}
+				$data = $this->cropDataWithProvidedLimit($data, $lowerLimit, $upperLimit);
+			}
+			return json_encode($data);
 		}
 		public function update($pageName, $attributeName, $newValue, $query="") {
 			return $this->updateToDatabase($pageName, $attributeName, $newValue, $query); 
@@ -37,7 +48,50 @@
 		public function delete($pageName, $attributeName="*", $query="") {
 			return $this->initiateDeleteProcess($pageName, $attributeName, $query);
 		}
+		public function getPages($lowerLimit = -1, $upperLimit = -1) {
+			return json_encode($this->fetchListOfPages($lowerLimit, $upperLimit));
+		}
 		// end of public functions accessible by users
+		private function cropDataWithProvidedLimit($data, $lowerLimit, $upperLimit) { // this function crops the result based on the  limit provided
+			$newDataSet = array();
+			$index = -1;
+			foreach($data as $chunk) {
+				$index+=1;
+				if($index<$lowerLimit) {
+					continue;
+				}
+				if($index>$upperLimit) {
+					break;
+				}
+				array_push($newDataSet, $chunk);
+			}
+			return $newDataSet;
+		}
+		private function fetchListOfPages($lowerLimit, $upperLimit) {
+			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
+			$pages= array();
+			$index = -1;
+			if($lowerLimit!=-1&&$upperLimit!=-1) {
+				($lowerLimit<0)?(($lowerLimit*(-1))):($lowerLimit*1);
+				($upperLimit<0)?(($upperLimit*(-1))):($upperLimit*1);
+				if($upperLimit < $lowerLimit) { // if upperLimit is less than lowerLimit then the value will be swaped
+					$temp = $upperLimit;
+					$upperLimit = $lowerLimit;
+					$lowerLimit = $temp;
+				}
+			}
+			foreach($contentOfFile as $key=>$value) {
+				$index++;
+				if($lowerLimit!=-1&&$index<$lowerLimit) {
+					continue;
+				}
+				if($upperLimit!=-1&&$index>$upperLimit) {
+					break;
+				}
+				array_push($pages, $key);	
+			}
+			return $pages;			
+		}
 		private function initiateDeleteProcess($pageName, $attributeName, $query) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			if(!isset($contentOfFile[$pageName])) {
@@ -589,7 +643,7 @@
 		private function writeToCache($cacheKey, $data) {
 			$dataSet = array();
 			$dataSet['CACHE_CREATE_TIME'] = time();
-			$dataSet['DATA'] = $data;
+			$dataSet['DATA'] = json_encode($data);
 			$LifeDBTempMemoryDump = json_decode($this->cache, true);
 			$LifeDBTempMemoryDump[$cacheKey] = $dataSet;
 			$this->cache = json_encode($LifeDBTempMemoryDump);
