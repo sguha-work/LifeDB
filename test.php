@@ -23,5 +23,5 @@
     //echo $instance->delete('FiddlesData', '*', "fiddle_id @eq :1");
     //echo $instance->find("ChildCategoryData", "[\"cat_id\"]","cat_name @eq :Chart");
   //echo $instance->find("FiddlesData", "[\"fiddle_id\"]");
-  echo $instance->getPages(2,0);
+  echo $instance->getPages(3,0);
 ?>
