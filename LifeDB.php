@@ -21,7 +21,7 @@
 		public function destroy($willDeleteFileAlso = false) { // destroy the whole database
 			$this->destroyDatabase($willDeleteFileAlso);
 		}
-		public function find($pageName, $attributeName="*", $query="", $lowerLimit=0, $upperLimit=0) { // search functionality
+		public function find($pageName, $attributeName="*", $query="", $lowerLimit=-1, $upperLimit=-1) { // search functionality
 			$cacheKey = $this->prepareCacheKey($pageName.$attributeName.$query);
 			$data;
 			if($this->keyExistsInCache($cacheKey)) {
@@ -30,12 +30,15 @@
 				$data = $this->searchFromDatabase($pageName, $attributeName, $query); 
 				$this->writeToCache($cacheKey, $data);
 			}
-			($lowerLimit<0)?(($lowerLimit*(-1))):($lowerLimit*1);
-			($upperLimit<0)?(($upperLimit*(-1))):($upperLimit*1);
-			if($upperLimit < $lowerLimit) { // if upperLimit is less than lowerLimit then the value will be swaped
-				$temp = $upperLimit;
-				$upperLimit = $lowerLimit;
-				$lowerLimit = $temp;
+			if($lowerLimit!=-1&&$upperLimit!=-1) {
+				($lowerLimit<0)?(($lowerLimit*(-1))):($lowerLimit*1);
+				($upperLimit<0)?(($upperLimit*(-1))):($upperLimit*1);
+				if($upperLimit < $lowerLimit) { // if upperLimit is less than lowerLimit then the value will be swaped
+					$temp = $upperLimit;
+					$upperLimit = $lowerLimit;
+					$lowerLimit = $temp;
+				}
+				$data = $this->cropDataWithProvidedLimit($data, $lowerLimit, $upperLimit);
 			}
 			return json_encode($data);
 		}
@@ -49,6 +52,21 @@
 			return json_encode($this->fetchListOfPages($lowerLimit, $upperLimit));
 		}
 		// end of public functions accessible by users
+		private function cropDataWithProvidedLimit($data, $lowerLimit, $upperLimit) { // this function crops the result based on the  limit provided
+			$newDataSet = array();
+			$index = -1;
+			foreach($data as $chunk) {
+				$index+=1;
+				if($index<$lowerLimit) {
+					continue;
+				}
+				if($index>$upperLimit) {
+					break;
+				}
+				array_push($newDataSet, $chunk);
+			}
+			return $newDataSet;
+		}
 		private function fetchListOfPages($lowerLimit, $upperLimit) {
 			$contentOfFile = json_decode($this->fetchTotalContentOfFileAsJsonString(), true);
 			$pages= array();
