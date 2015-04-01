@@ -5,6 +5,7 @@
 <?php
   $time1 = microtime(true);
 	$instance = new LifeDB("fiddleData_new.js");
+  $instance2 = new LifeDB("NewFiddles.js");
   	//echo $instance->find("FiddleToCategory", "*", "");
   	//echo $instance->find("FiddleToCategory", "[\"fiddle_id\"]", "");
   	//echo $instance->find("FiddleToCategory", "[\"fiddle_id\"]", "[\"category_id @eq 1\", \"category_id @eq 13\"]", 0, 2);
@@ -22,7 +23,17 @@
 
     //echo $instance->delete('FiddlesData', '*', "fiddle_id @eq :1");
     //echo $instance->find("ChildCategoryData", "[\"cat_id\"]","cat_name @eq :Chart");
-  echo $instance->find("FiddlesData", "[\"fiddle_id\"]", "", 5,5);
+  $index=1;
+  echo $instance->find("FiddlesData", "[\"fiddle_thumb\"]", "fiddle_id @eq :1");
+  echo "</br>";
+  echo $instance2->find("FiddlesData", "[\"fiddle_thumb\"]", "fiddle_id @eq :1");
+    //echo $index.":::";
+  //    if (!is_numeric($fiddleLinkObject["fiddle_new_link"][strlen($fiddleLinkObject["fiddle_new_link"])-2])) {
+  //      echo "errorinlink";
+  // }
+    //echo $fiddleLinkObject["fiddle_new_link"]."</br>";
+    //$index++;
+  //}
 
   //echo $instance->getPages(3,0);
 ?>

@@ -253,7 +253,7 @@
 				if($this->checkRecordWithQuery($pageData[$index], $query)) {
 					array_push($resultArray, $pageData[$index]);
 				}
-			} 
+			}
 			return $resultArray;
 		}
 		private function checkRecordWithQuery($record, $query) {// check record with query
