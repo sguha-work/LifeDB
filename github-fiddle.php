@@ -1,4 +1,5 @@
 <?php
+set_time_limit(0);
 // Create connection
 global $con;
 $con=mysqli_connect("192.168.0.57","root","NewRoot","dbo");
@@ -26,16 +27,17 @@ function insertFiddleData() {
 		$fiddleLink = $fiddleLinkObject["fiddle_new_link"];
 		$newSingleFiddle['fiddle_url'] = $fiddleLink;//*
 		$fiddleLinkArray = explode("_", $fiddleLink);
-		$fiddleIdOriginal = trim($fiddleLinkArray[count($fiddleLinkArray)-1],'/');
-		$fiddleOldObject = json_decode($db2->find("FiddlesData", "[\"fiddle_thumb\",\"fiddle_description\"]","fiddle_id @eq :1"), true);
-		echo json_encode($fiddleOldObject);die();
-		$newSingleFiddle['fiddle_thumb'] = $fiddleOldObject["fiddle_thumb"];//*
+		$fiddleIdOriginal = intval(trim($fiddleLinkArray[count($fiddleLinkArray)-1],'/'))+1;
+		$fiddleOldObject = json_decode($db2->find("FiddlesData", "[\"fiddle_url\",\"fiddle_description\"]","fiddle_id @eq :".$fiddleIdOriginal), true)[0];
+		$array = explode("/",$fiddleOldObject["fiddle_url"]);//*
+		$newSingleFiddle['fiddle_thumb'] = $array[count($array)-2].".png";
+
 		$newSingleFiddle['fiddle_description'] = $fiddleOldObject["fiddle_description"];//*
 
 		array_push($newFiddleArray, $newSingleFiddle);
 		$index++;
 	}
-	echo json_encode($newFiddleArray);
+	return ($newFiddleArray);
 }
-insertFiddleData();
+$fiddleArray = insertFiddleData();
 ?>

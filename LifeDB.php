@@ -439,7 +439,7 @@
 			$separatedQuery = NULL;
 			$recordJSON = json_encode($record);
 			$record = NULL;
-			$stringOfAttributeAndValue = '"'.$attributeName.'":'.$value;
+			$stringOfAttributeAndValue = '"'.$attributeName.'":"'.$value.'"'; 
 			if(is_numeric($value)) {
 				$stringOfAttributeAndValue2 = $stringOfAttributeAndValue . ",";
 				$stringOfAttributeAndValue3 = $stringOfAttributeAndValue . "}";
