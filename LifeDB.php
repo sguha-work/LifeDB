@@ -433,9 +433,6 @@
 		private function checkEqual($record, $separatedQuery) {
 			$attributeName = $separatedQuery['attribute'];
 			$value = $separatedQuery['value'];
-			if(!is_numeric($value)) {
-				$value = json_encode($value);
-			}
 			$separatedQuery = NULL;
 			$recordJSON = json_encode($record);
 			$record = NULL;

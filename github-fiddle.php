@@ -39,5 +39,15 @@ function insertFiddleData() {
 	}
 	return ($newFiddleArray);
 }
+
+function insertFiddleToCategoryData($fiddleArray) {
+	$newFiddleToCategory = array();
+	$db = new LifeDB('fiddleData_new.js');
+	foreach($fiddleArray as $fiddle) {
+		
+	}
+
+}
 $fiddleArray = insertFiddleData();
+$fiddleToCategoryArray = insertFiddleToCategoryData($fiddleArray);
 ?>
