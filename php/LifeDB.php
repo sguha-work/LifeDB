@@ -253,7 +253,7 @@
 				if($this->checkRecordWithQuery($pageData[$index], $query)) {
 					array_push($resultArray, $pageData[$index]);
 				}
-			} 
+			}
 			return $resultArray;
 		}
 		private function checkRecordWithQuery($record, $query) {// check record with query
@@ -433,13 +433,10 @@
 		private function checkEqual($record, $separatedQuery) {
 			$attributeName = $separatedQuery['attribute'];
 			$value = $separatedQuery['value'];
-			if(!is_numeric($value)) {
-				$value = json_encode($value);
-			}
 			$separatedQuery = NULL;
 			$recordJSON = json_encode($record);
 			$record = NULL;
-			$stringOfAttributeAndValue = '"'.$attributeName.'":'.$value;
+			$stringOfAttributeAndValue = '"'.$attributeName.'":"'.$value.'"'; 
 			if(is_numeric($value)) {
 				$stringOfAttributeAndValue2 = $stringOfAttributeAndValue . ",";
 				$stringOfAttributeAndValue3 = $stringOfAttributeAndValue . "}";
